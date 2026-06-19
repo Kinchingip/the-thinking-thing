@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html class="client-nojs vector-feature-language-in-header-enabled vector-feature-limited-width-clientpref-1" lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WikiWiki</title>
+  <link rel="stylesheet" href="assets/vector.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="skin-vector skin-vector-search-vue mediawiki ltr">
+
+  <!-- skip link -->
+  <a class="mw-jump-link" href="#mw-content-text">Jump to content</a>
+
+  <!-- ── header ── -->
+  <div class="vector-header-container">
+    <header class="vector-header mw-header">
+
+      <div class="vector-header-start">
+        <div class="mw-logo">
+          <a class="mw-logo-container" data-page="peculiar-mississippi" style="cursor:pointer">
+            <img class="mw-logo-icon" src="assets/art/logo.png" alt="" width="50" height="50" />
+            <span class="mw-logo-container">
+              <img class="mw-logo-wordmark" alt="WikiWiki" src="assets/art/wordmark.png"
+                   onerror="this.style.display='none'; this.nextElementSibling.style.display='inline'" />
+              <span style="display:none; font-size:1.2em; font-style:italic; color:#54595d">WikiWiki</span>
+            </span>
+          </a>
+        </div>
+      </div>
+
+      <div class="vector-header-end">
+        <div id="p-search" role="search" class="vector-search-box">
+          <div class="vector-search-box-vue vector-search-box-collapses">
+            <form action="#" id="searchform">
+              <div id="simpleSearch" class="vector-search-box-inner">
+                <input id="searchInput" class="vector-search-box-input" type="search"
+                       name="search" placeholder="Search WikiWiki" autocomplete="off" />
+                <button type="submit" class="searchButton mw-searchButton" title="Search WikiWiki">
+                  <span>Search</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+    </header>
+  </div><!-- /vector-header-container -->
+
+  <!-- ── page container ── -->
+  <div class="mw-page-container">
+    <div class="mw-page-container-inner">
+
+      <!-- left sidebar -->
+      <div class="vector-column-start">
+        <div class="vector-main-menu-container">
+          <div id="mw-navigation">
+            <nav id="mw-panel" class="vector-main-menu-landmark" aria-label="Site">
+
+              <div class="vector-main-menu">
+                <div id="p-navigation" class="mw-portlet vector-menu">
+                  <div class="vector-menu-heading">Navigation</div>
+                  <div class="vector-menu-content">
+                    <ul class="vector-menu-content-list mw-list-item">
+                      <li><a data-page="peculiar-mississippi">Main page</a></li>
+                      <li><a data-page="list-of-residents">Contents</a></li>
+                    </ul>
+                  </div>
+                </div>
+
+                <!-- injected dynamically by state.js as pages unlock -->
+                <div id="sidebar-dynamic" class="mw-portlet vector-menu" style="display:none">
+                  <div class="vector-menu-heading">Recent</div>
+                  <div class="vector-menu-content">
+                    <ul id="sidebar-dynamic-list" class="vector-menu-content-list mw-list-item"></ul>
+                  </div>
+                </div>
+              </div>
+
+            </nav>
+          </div>
+        </div>
+      </div><!-- /vector-column-start -->
+
+      <!-- main content -->
+      <div class="mw-content-container">
+        <main id="content" class="mw-body">
+
+          <!-- page title bar -->
+          <header class="mw-body-header vector-page-titlebar">
+            <h1 id="firstHeading" class="firstHeading mw-first-heading">
+              <span class="mw-page-title-main" id="page-title">Loading…</span>
+            </h1>
+          </header>
+
+          <!-- tab bar: Article / Talk -->
+          <div class="vector-page-toolbar">
+            <div class="vector-page-toolbar-container">
+              <div id="left-navigation">
+                <nav aria-label="Namespaces">
+                  <ul class="vector-menu-tabs mw-portlet-views">
+                    <li id="tab-article" class="selected mw-list-item">
+                      <a data-tab="article" title="View the content page">Article</a>
+                    </li>
+                    <li id="tab-talk" class="mw-list-item" style="display:none">
+                      <a data-tab="talk" title="Discussion about this page">Talk</a>
+                    </li>
+                  </ul>
+                </nav>
+              </div>
+            </div>
+          </div><!-- /vector-page-toolbar -->
+
+          <!-- body content -->
+          <div id="bodyContent" class="vector-body" aria-labelledby="firstHeading">
+            <div class="vector-body-before-content"></div>
+            <div id="mw-content-text" class="mw-body-content">
+              <div id="wiki-content" class="mw-content-ltr mw-parser-output" lang="en" dir="ltr">
+                <p class="loading">Loading…</p>
+              </div>
+            </div>
+          </div><!-- /bodyContent -->
+
+        </main>
+      </div><!-- /mw-content-container -->
+
+    </div><!-- /mw-page-container-inner -->
+  </div><!-- /mw-page-container -->
+
+  <!-- ── footer ── -->
+  <div class="mw-footer-container">
+    <footer id="footer" class="mw-footer">
+      <ul id="footer-info">
+        <li id="footer-info-lastmod">WikiWiki — a horror experience</li>
+      </ul>
+    </footer>
+  </div>
+
+  <script type="module">
+    import { init } from './js/router.js';
+    init();
+  </script>
+
+</body>
+</html>

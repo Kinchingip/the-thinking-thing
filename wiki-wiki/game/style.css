@@ -1,0 +1,107 @@
+/*
+  style.css — game-specific overrides layered on top of assets/vector.css
+  Do not put layout here; vector.css handles that.
+  This file owns: corruption effects, talk dialogue, logo fallback, link interception.
+*/
+
+/* ── make data-page links behave like real links ── */
+[data-page], [data-tab] { cursor: pointer; }
+
+/* ── logo text fallback (when wordmark image missing) ── */
+.mw-logo-wordmark { font-style: italic; }
+
+/* ── hide the real search form submission ── */
+#searchform { display: contents; }
+
+/* ── talk tab hidden until unlocked ── */
+#tab-talk { display: none; }
+
+/* ──────────────────────────────────────────────
+   CORRUPTION STATES
+   Applied to #wiki-content via data-corruption-state
+   ────────────────────────────────────────────── */
+
+#wiki-content[data-corruption-state="touched"] {
+  /* Subtle: barely perceptible warm tint */
+  background: rgba(255, 200, 200, 0.03);
+}
+
+#wiki-content[data-corruption-state="degraded"] {
+  background: rgba(180, 0, 0, 0.05);
+  filter: contrast(1.02);
+}
+
+#wiki-content[data-corruption-state="corrupted"] {
+  filter: contrast(1.1) saturate(0.25);
+}
+
+/* Full corruption — body-level, applied by corruption.js */
+body.corrupted {
+  background: #0a0a0a !important;
+}
+
+body.corrupted .mw-body,
+body.corrupted .vector-header,
+body.corrupted .mw-footer {
+  background: #0f0f0f;
+  border-color: #1a1a1a;
+  color: #b0b0b0;
+}
+
+body.corrupted a,
+body.corrupted [data-page] {
+  color: #666;
+}
+
+/* ── glitch animation ── */
+.glitch {
+  animation: glitch 0.35s steps(1) infinite;
+}
+
+@keyframes glitch {
+  0%   { transform: none;          opacity: 1;   }
+  20%  { transform: skewX(-3deg);  opacity: 0.8; clip-path: inset(10% 0 80% 0); }
+  40%  { transform: skewX(3deg);   opacity: 1;   clip-path: inset(50% 0 30% 0); }
+  60%  { transform: none;                         clip-path: none; }
+  80%  { transform: translateX(2px); opacity: 0.7; }
+  100% { transform: none;          opacity: 1;   }
+}
+
+/* ── text corruption helpers (applied by corruption.js) ── */
+.corrupted-char {
+  color: #8b0000;
+  font-weight: bold;
+}
+
+.redacted {
+  background: #000;
+  color: transparent;
+  user-select: none;
+}
+
+/* ── talk / dialogue ── */
+.talk-line {
+  margin-bottom: 12px;
+  padding-left: 16px;
+  border-left: 3px solid #a2a9b1;
+  font-style: italic;
+  color: #444;
+}
+
+.talk-end { color: #888; margin-top: 16px; }
+
+#talk-next {
+  margin-top: 16px;
+  display: inline-block;
+  cursor: pointer;
+  color: #3366cc;
+  font-size: 13px;
+}
+
+#talk-next:hover { text-decoration: underline; }
+
+/* ── misc ── */
+.loading {
+  color: #72777d;
+  font-style: italic;
+}
