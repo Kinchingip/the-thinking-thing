@@ -9,7 +9,8 @@
 //
 // CAPTCHA content is TBD — drop implementations into CAPTCHAS[id].render/validate.
 
-import { recordChoice, setFlag } from './state.js';
+import { recordChoice, setFlag, setPlayerChoice, getPlayerData } from './state.js';
+import { triggerAllyDownload, requestNotificationPermission } from './browser-horror.js';
 
 // ── CAPTCHA definitions ──────────────────────────────────────────────────────
 // Each entry:
@@ -162,8 +163,6 @@ function showTalkTab(captchaId, navigate) {
 }
 
 function renderFinalChoice(container, captcha, navigate) {
-  const { setPlayerChoice } = window.__wikiwikiState ?? {};
-
   const actions = document.createElement('div');
   actions.className = 'captcha-final-actions';
 
@@ -171,22 +170,23 @@ function renderFinalChoice(container, captcha, navigate) {
   accept.textContent = 'Accept';
   accept.className = 'mw-ui-button mw-ui-progressive';
   accept.onclick = () => {
-    import('./state.js').then(({ setPlayerChoice }) => {
-      setPlayerChoice('accept');
-      recordChoice('talk:ch3', 'accept');
-      navigate('player-page');
-    });
+    const playerData = getPlayerData();
+    // Both calls must happen synchronously inside the click handler —
+    // the browser requires a user gesture for downloads and notification permission.
+    triggerAllyDownload(playerData);
+    requestNotificationPermission(playerData);
+    setPlayerChoice('accept');
+    recordChoice('talk:ch3', 'accept');
+    navigate('player-page');
   };
 
   const refuse = document.createElement('button');
   refuse.textContent = 'Refuse';
   refuse.className = 'mw-ui-button mw-ui-destructive';
   refuse.onclick = () => {
-    import('./state.js').then(({ setPlayerChoice }) => {
-      setPlayerChoice('refuse');
-      recordChoice('talk:ch3', 'refuse');
-      triggerRefuseEnding();
-    });
+    setPlayerChoice('refuse');
+    recordChoice('talk:ch3', 'refuse');
+    triggerRefuseEnding();
   };
 
   actions.appendChild(accept);

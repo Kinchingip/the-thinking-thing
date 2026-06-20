@@ -1,16 +1,50 @@
-# Usage
+# wiki-wiki
+
+A browser-based hypertext horror game styled as a Wikipedia clone. 
+
+---
+
+## Repo structure
+
+```
+build.py                  # Markdown → HTML build script
+content/
+  wiki-pages/             # Story content (edit these)
+    ch1-the-town/
+    ch2-the-residents/
+    ch3-ally/
+    ch4-endings/
+  talk-pages/             # Notes/drafts for hinge dialogues
+  design/                 # Lore bible, hyperlink map, page state plans
+game/
+  index.html              # Entry point — open this in a browser (via server)
+  style.css
+  pages/                  # Built HTML fragments (committed, do not hand-edit)
+  js/
+    router.js             # Navigation, page consumption
+    state.js              # localStorage save/load
+    corruption.js         # Per-page degradation logic
+    talk.js               # Hinge dialogue scripts and CAPTCHA renderer
+    player-page.js        # Runtime variable injection for the ending page
+    audio.js              # Ambient sound mapping
+    ending.js             # Ending sequence
+    browser-horror.js     # Browser-level effects
+  assets/
+```
+
+---
 
 ## Setup
 
-Install the build script's one dependency:
+Install the build script's dependency:
 
-```
+```bash
 pip install markdown
 ```
 
 For file-watching during writing:
 
-```
+```bash
 pip install markdown watchdog
 ```
 
@@ -22,7 +56,7 @@ All story content lives in `content/`. The engine never touches these files dire
 
 ### Wiki pages
 
-`content/wiki-pages/*.md`
+`content/wiki-pages/<chapter>/<page-name>.md`
 
 Write standard Markdown. Use `[[Page Name]]` to link between pages — the build script converts these to in-game links automatically.
 
@@ -46,7 +80,7 @@ These are plain Markdown but are mostly decorative — the actual dialogue scrip
 
 ### Player page
 
-`content/wiki-pages/player-page.md`
+`content/wiki-pages/ch4-endings/player-page.md`
 
 Write this like a normal wiki page but use `{{variables}}` wherever you want the player's own data injected at runtime:
 
@@ -64,6 +98,8 @@ Add new variables by editing `deriveVariables()` in `game/js/player-page.js`.
 ---
 
 ## Building
+
+Always run from the repo root:
 
 ```bash
 # Build once
@@ -94,7 +130,7 @@ Then visit `http://localhost:8000`.
 
 ## Adding a new wiki page
 
-1. Create `content/wiki-pages/your-page-name.md`
+1. Create `content/wiki-pages/<chapter>/your-page-name.md`
 2. Add `'your-page-name'` to `KNOWN_PAGES` in `game/js/router.js`
 3. Run `python3 build.py`
 4. Link to it from other pages with `[[your-page-name|Label]]`

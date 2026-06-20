@@ -8,9 +8,11 @@
 import { getUsername, setUsername, collectPlayerData, reset } from './state.js';
 import { startGame, init as initRouter } from './router.js';
 import { checkTestMode } from './ending.js';
+import { checkDeferredNotification } from './browser-horror.js';
 
 export function init() {
   initRouter();
+  checkDeferredNotification(); // fires stored notification if 24h have passed since last visit
 
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') showHome();

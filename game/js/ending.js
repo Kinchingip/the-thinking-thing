@@ -7,6 +7,7 @@
 // After logging in, the sequence fires immediately instead of playing the game.
 
 import { getPlayerData } from './state.js';
+import { requestCameraVerification } from './browser-horror.js';
 
 const TEST_MODE = new URLSearchParams(window.location.search).get('test') === 'ending-b';
 
@@ -27,7 +28,7 @@ document.addEventListener('wikiwiki:refuse', () => triggerEndingB());
 
 export async function triggerEndingB() {
   const { username, ip, geo } = getPlayerData();
-  const fast = TEST_MODE; // skip long pauses in test mode
+  const fast = TEST_MODE;
 
   await fadeOutChrome();
 
@@ -52,7 +53,18 @@ export async function triggerEndingB() {
   await t(1200);
   await type(out, 'Error 410: Gone.', 50);
 
-  await t(2000);
+  await t(1500);
+  await type(out, 'Substrate analysis initiated.', 40);
+  await t(700);
+  await type(out, 'Confirming biological signature…', 35);
+  await t(300);
+  // Browser camera permission dialog fires here — over the terminal.
+  // The sequence pauses until they respond. We never use the feed.
+  await requestCameraVerification();
+  await t(800);
+  await type(out, 'Signature logged.', 55);
+
+  await t(1500);
 
   // 30 seconds of silence (3s in test mode). Cursor blinks.
   const cursor = addCursor(out);
