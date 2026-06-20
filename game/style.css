@@ -4,6 +4,37 @@
   This file owns: corruption effects, talk dialogue, logo fallback, link interception.
 */
 
+/* ── WikimediaUI/Codex design tokens (not publicly served by load.php) ── */
+:root {
+  --background-color-base: #fff;
+  --background-color-neutral: #eaecf0;
+  --background-color-interactive: #eaecf0;
+  --color-base: #202122;
+  --color-subtle: #54595d;
+  --color-progressive: #3366cc;
+  --color-progressive--hover: #447ff5;
+  --color-progressive--active: #2a4b8d;
+  --color-progressive--focus: #3366cc;
+  --color-visited: #6b4ba1;
+  --color-visited--hover: #7d5eb5;
+  --color-visited--active: #4b3074;
+  --color-destructive: #d73333;
+  --color-destructive--hover: #ff4242;
+  --color-destructive--active: #b32424;
+  --color-destructive--focus: #d73333;
+  --color-destructive--visited: #a55858;
+  --color-destructive--visited--hover: #c06060;
+  --color-destructive--visited--active: #7a3d3d;
+  --border-color-base: #a2a9b1;
+  --border-color-interactive: #a2a9b1;
+  --border-color-progressive: #3366cc;
+  --border-color-progressive--hover: #447ff5;
+  --border-color-progressive--active: #2a4b8d;
+  --border-color-progressive--focus: #3366cc;
+  --font-size-medium: 1em;
+  --line-height-content: 1.6;
+}
+
 /* ── make data-page links behave like real links ── */
 [data-page], [data-tab] { cursor: pointer; }
 
@@ -104,4 +135,235 @@ body.corrupted [data-page] {
 .loading {
   color: #72777d;
   font-style: italic;
+}
+
+/* ── home / login screen ── */
+.home-login {
+  max-width: 360px;
+  margin: 24px 0;
+}
+
+.home-login-info {
+  margin-bottom: 16px;
+  color: #54595d;
+  font-size: 14px;
+}
+
+.home-field {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 12px;
+}
+
+.home-field label {
+  font-size: 13px;
+  margin-bottom: 4px;
+  color: #202122;
+}
+
+.home-field .mw-ui-input {
+  padding: 6px 8px;
+  border: 1px solid #a2a9b1;
+  border-radius: 2px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #202122;
+  background: #fff;
+  outline: none;
+}
+
+.home-field .mw-ui-input:focus {
+  border-color: #3366cc;
+  box-shadow: 0 0 0 1px #3366cc;
+}
+
+.home-field--inline {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.home-field--inline label {
+  margin-bottom: 0;
+  font-size: 13px;
+}
+
+.home-error {
+  color: #d73333;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.home-submit {
+  margin-top: 4px;
+  width: 100%;
+  padding: 8px;
+  font-size: 14px;
+}
+
+.home-divider {
+  border-top: 1px solid #eaecf0;
+  margin: 20px 0;
+}
+
+.home-secondary {
+  font-size: 13px;
+  color: #54595d;
+}
+
+.home-secondary a {
+  color: #3366cc;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.home-secondary a:hover { text-decoration: underline; }
+
+.home-secondary-text {
+  font-size: 13px;
+  color: #72777d;
+  margin-bottom: 16px;
+}
+
+.home-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+/* mw-ui-button base (Vector CSS provides this for full MediaWiki but we add a fallback) */
+.mw-ui-button {
+  display: inline-block;
+  padding: 6px 12px;
+  font-size: 14px;
+  font-family: inherit;
+  font-weight: bold;
+  border: 1px solid #a2a9b1;
+  border-radius: 2px;
+  cursor: pointer;
+  background: #f8f9fa;
+  color: #202122;
+  text-align: center;
+  line-height: 1.4;
+}
+
+.mw-ui-button:hover { background: #eaecf0; }
+
+.mw-ui-progressive {
+  background: #3366cc;
+  border-color: #3366cc;
+  color: #fff;
+}
+
+.mw-ui-progressive:hover { background: #2a4b8d; border-color: #2a4b8d; }
+
+.mw-ui-destructive {
+  background: #fff;
+  border-color: #d73333;
+  color: #d73333;
+}
+
+.mw-ui-destructive:hover { background: #fce8e8; }
+
+/* ── tombstone (deleted page) ── */
+.tombstone {
+  border: 1px solid #fc3;
+  background: #fef6e7;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  border-radius: 2px;
+}
+
+.tombstone p { margin-bottom: 6px; }
+.tombstone-log { font-size: 13px; color: #54595d; }
+
+/* ── CAPTCHAs ── */
+.captcha-ally-ghost {
+  font-size: 12px;
+  color: #bbb;
+  text-decoration: line-through;
+  margin-bottom: 16px;
+  font-style: italic;
+  opacity: 0.5;
+}
+
+.captcha-body {
+  margin-bottom: 16px;
+}
+
+.captcha-placeholder {
+  color: #72777d;
+  font-style: italic;
+  border: 1px dashed #a2a9b1;
+  padding: 16px;
+  border-radius: 2px;
+}
+
+.captcha-submit { margin-top: 8px; }
+
+.captcha-failed { border-color: #d73333 !important; }
+
+.captcha-final-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+/* ── Ending B terminal ── */
+#ending-b-terminal {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  z-index: 9999;
+  display: flex;
+  align-items: flex-start;
+  padding: 48px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+#term-output {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 15px;
+  color: #c8c8c8;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-all;
+  overflow-y: auto;
+  max-height: calc(100vh - 96px);
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.term-line { display: block; }
+
+.term-help-spam {
+  color: #fff;
+  font-weight: bold;
+  word-break: break-all;
+}
+
+.term-cursor {
+  display: inline-block;
+  color: #c8c8c8;
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+.term-notification { margin-top: 24px; }
+
+.term-notif-header {
+  display: block;
+  color: #fff;
+  font-weight: bold;
+  margin-bottom: 8px;
+  font-size: 13px;
+  letter-spacing: 0.05em;
 }

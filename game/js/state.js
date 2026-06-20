@@ -3,11 +3,17 @@
 const STATE_KEY = 'wikiwiki_state';
 
 const defaults = {
-  visits: {},       // { pageId: count }
-  choices: [],      // [{ pageId, choiceId, timestamp }]
-  startTime: null,  // epoch ms, set on first page load
-  flags: {},        // { flagName: bool } — for story triggers
-  talkProgress: {}, // { hingeId: stepIndex }
+  username: null,
+  consumedPages: [],    // pages left behind — one-way, cannot return
+  currentPage: null,    // last page the player was on
+  playerChoice: null,   // 'accept' | 'refuse' — set in chapter 3
+  ip: null,
+  geo: null,            // { city, region, country, lat, lon }
+  visits: {},           // { pageId: count }
+  choices: [],          // [{ pageId, choiceId, timestamp }]
+  startTime: null,
+  flags: {},
+  talkProgress: {},
 };
 
 function load() {
@@ -23,11 +29,74 @@ function save(state) {
   localStorage.setItem(STATE_KEY, JSON.stringify(state));
 }
 
-// --- public API ---
+// ── public API ──
 
 export function getState() {
   return load();
 }
+
+export function getUsername() {
+  return load().username;
+}
+
+export function setUsername(name) {
+  const state = load();
+  state.username = name;
+  if (!state.startTime) state.startTime = Date.now();
+  save(state);
+}
+
+// Silently collects IP and approximate location via ipapi.co.
+// Called once at login. Fails silently if blocked.
+export async function collectPlayerData() {
+  try {
+    const res = await fetch('https://ipapi.co/json/');
+    const data = await res.json();
+    const state = load();
+    state.ip = data.ip ?? null;
+    state.geo = {
+      city: data.city ?? null,
+      region: data.region ?? null,
+      country: data.country_name ?? null,
+      lat: data.latitude ?? null,
+      lon: data.longitude ?? null,
+    };
+    save(state);
+  } catch {
+    // Non-critical — endings degrade gracefully if missing
+  }
+}
+
+export function getPlayerData() {
+  const { username, ip, geo } = load();
+  return { username, ip, geo };
+}
+
+// ── one-way navigation ──
+
+export function consumePage(pageId) {
+  const state = load();
+  if (!state.consumedPages.includes(pageId)) {
+    state.consumedPages.push(pageId);
+  }
+  save(state);
+}
+
+export function isConsumed(pageId) {
+  return load().consumedPages.includes(pageId);
+}
+
+export function setCurrentPage(pageId) {
+  const state = load();
+  state.currentPage = pageId;
+  save(state);
+}
+
+export function getCurrentPage() {
+  return load().currentPage;
+}
+
+// ── visits ──
 
 export function recordVisit(pageId) {
   const state = load();
@@ -39,6 +108,8 @@ export function recordVisit(pageId) {
 export function getVisitCount(pageId) {
   return load().visits[pageId] ?? 0;
 }
+
+// ── choices / flags ──
 
 export function recordChoice(pageId, choiceId) {
   const state = load();
@@ -56,6 +127,18 @@ export function getFlag(name) {
   return load().flags[name] ?? false;
 }
 
+export function setPlayerChoice(choice) {
+  const state = load();
+  state.playerChoice = choice;
+  save(state);
+}
+
+export function getPlayerChoice() {
+  return load().playerChoice;
+}
+
+// ── talk / CAPTCHA progress ──
+
 export function advanceTalk(hingeId) {
   const state = load();
   state.talkProgress[hingeId] = (state.talkProgress[hingeId] ?? 0) + 1;
@@ -66,6 +149,8 @@ export function advanceTalk(hingeId) {
 export function getTalkStep(hingeId) {
   return load().talkProgress[hingeId] ?? 0;
 }
+
+// ── session ──
 
 export function getSessionDuration() {
   const state = load();

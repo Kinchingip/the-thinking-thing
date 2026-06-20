@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """
-build.py — converts content/*.md files into game/pages/*.html fragments.
+build.py — converts content/wiki-pages/**/*.md into game/pages/*.html fragments.
 
-Each .md file is converted to an HTML fragment (no <html>/<body> wrapper)
-that the router injects into #wiki-content at runtime.
+Talk pages are NOT built — they are rendered entirely in JavaScript (talk.js).
+The content/talk-pages/ folder exists for writing notes and CAPTCHA scripts only.
+
+Output is always flat in game/pages/ regardless of chapter subdirectory.
 
 Run:
     python3 build.py            # build everything
@@ -16,53 +18,57 @@ import sys
 from pathlib import Path
 
 try:
-    import markdown  # pip install markdown
+    import markdown
 except ImportError:
     sys.exit("Missing dependency: pip install markdown")
 
-CONTENT_DIR = Path("content")
-OUTPUT_DIR  = Path("game/pages")
-
+CONTENT_DIR   = Path("content")
 WIKI_PAGES_DIR = CONTENT_DIR / "wiki-pages"
-TALK_PAGES_DIR = CONTENT_DIR / "talk-pages"
+OUTPUT_DIR     = Path("game/pages")
+
+CHAPTERS = {
+    "ch1-the-town":      "Chapter 1 — The Town",
+    "ch2-the-residents": "Chapter 2 — The Residents",
+    "ch3-ally":          "Chapter 3 — Ally",
+    "ch4-endings":       "Chapter 4 — Endings",
+}
 
 
 def wiki_link(match):
-    """Convert [[Page Name]] to <a data-page="page-name">Page Name</a>."""
-    raw = match.group(1)
+    """Convert [[Page Name]] or [[page-id|Label]] to an in-game anchor."""
+    raw   = match.group(1)
     label = match.group(2) if match.group(2) else raw
     page_id = raw.lower().replace(" ", "-")
     return f'<a data-page="{page_id}">{label}</a>'
 
 
 def process_md(text: str) -> str:
-    """Apply wiki-style preprocessing before markdown conversion."""
-    # [[Page Name]] or [[page-id|Label]]
     text = re.sub(r'\[\[([^\]|]+)(?:\|([^\]]+))?\]\]', wiki_link, text)
     return text
 
 
 def build_page(md_path: Path, out_path: Path):
-    raw = md_path.read_text(encoding="utf-8")
+    raw       = md_path.read_text(encoding="utf-8")
     processed = process_md(raw)
-    html = markdown.markdown(processed, extensions=["tables", "fenced_code"])
+    html      = markdown.markdown(processed, extensions=["tables", "fenced_code"])
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(html, encoding="utf-8")
-    print(f"  built {out_path.relative_to(Path('.'))}")
+    print(f"  {md_path.relative_to(CONTENT_DIR)}  →  {out_path.name}")
 
 
 def build_all():
-    print("Building wiki pages…")
-    for md_path in WIKI_PAGES_DIR.glob("*.md"):
-        out_path = OUTPUT_DIR / f"{md_path.stem}.html"
-        build_page(md_path, out_path)
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-    print("Building talk pages…")
-    for md_path in TALK_PAGES_DIR.glob("*.md"):
-        out_path = OUTPUT_DIR / f"talk-{md_path.stem}.html"
-        build_page(md_path, out_path)
+    for chapter_dir in sorted(WIKI_PAGES_DIR.iterdir()):
+        if not chapter_dir.is_dir():
+            continue
+        label = CHAPTERS.get(chapter_dir.name, chapter_dir.name)
+        print(f"\n{label}")
+        for md_path in sorted(chapter_dir.glob("*.md")):
+            out_path = OUTPUT_DIR / f"{md_path.stem}.html"
+            build_page(md_path, out_path)
 
-    print("Done.")
+    print("\nDone.")
 
 
 def watch():
@@ -74,17 +80,21 @@ def watch():
 
     class Handler(FileSystemEventHandler):
         def on_modified(self, event):
-            if event.src_path.endswith(".md"):
-                p = Path(event.src_path)
-                is_talk = p.parent.name == "talk-pages"
-                stem = p.stem
-                out = OUTPUT_DIR / (f"talk-{stem}.html" if is_talk else f"{stem}.html")
-                build_page(p, out)
+            p = Path(event.src_path)
+            if p.suffix != ".md":
+                return
+            # Only build files inside wiki-pages/ — skip talk-pages and design/
+            try:
+                p.relative_to(WIKI_PAGES_DIR)
+            except ValueError:
+                return
+            out = OUTPUT_DIR / f"{p.stem}.html"
+            build_page(p, out)
 
     observer = Observer()
-    observer.schedule(Handler(), str(CONTENT_DIR), recursive=True)
+    observer.schedule(Handler(), str(WIKI_PAGES_DIR), recursive=True)
     observer.start()
-    print(f"Watching {CONTENT_DIR}/ for changes… (Ctrl-C to stop)")
+    print(f"Watching {WIKI_PAGES_DIR}/ for changes… (Ctrl-C to stop)")
     try:
         while True:
             import time; time.sleep(1)
@@ -95,7 +105,7 @@ def watch():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--watch", action="store_true", help="Watch for changes and rebuild")
+    parser.add_argument("--watch", action="store_true")
     args = parser.parse_args()
 
     if args.watch:
