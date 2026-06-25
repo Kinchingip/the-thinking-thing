@@ -12,6 +12,7 @@ const KNOWN_PAGES = [
   'list-of-residents',
   'the-cartographers',
   'substrate-transcription',
+  'harrow-wv',
   // Chapter 2 — The Residents
   'henry-liang',
   'muscipulavirus',
@@ -41,7 +42,7 @@ export function init() {
 // Called by home.js after login — resumes at last known page or starts fresh.
 export function startGame() {
   const last = getCurrentPage();
-  navigate(last && KNOWN_PAGES.includes(last) ? last : 'peculiar-mississippi');
+  navigate(last && KNOWN_PAGES.includes(last) ? last : 'harrow-wv');
 }
 
 export function navigate(pageId) {
