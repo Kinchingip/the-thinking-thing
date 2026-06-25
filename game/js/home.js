@@ -13,7 +13,7 @@ import { checkDeferredNotification } from './browser-horror.js';
 export function init() {
   // Replace the initial browser history entry with the home marker so that
   // pressing back from inside the game lands here instead of leaving the app.
-  history.replaceState({ isHome: true }, '', location.href);
+  history.replaceState({ isHome: true }, '', location.pathname + location.search);
 
   initRouter(showHome);
   checkDeferredNotification(); // fires stored notification if 24h have passed since last visit

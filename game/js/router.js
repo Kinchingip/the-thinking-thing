@@ -52,10 +52,10 @@ export function init(onHome = () => {}) {
     navigate(link.dataset.page);
   });
 
-  window.addEventListener('popstate', (e) => {
-    if (e.state?.isHome) { onHome(); return; }
-    const pageId = e.state?.pageId;
-    if (pageId) navigate(pageId, false);
+  window.addEventListener('popstate', () => {
+    const pageId = location.hash.slice(1);
+    if (!pageId || !KNOWN_PAGES_SET.includes(pageId)) { onHome(); return; }
+    navigate(pageId, false);
   });
 }
 
