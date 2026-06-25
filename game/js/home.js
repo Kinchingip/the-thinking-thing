@@ -11,7 +11,11 @@ import { checkTestMode } from './ending.js';
 import { checkDeferredNotification } from './browser-horror.js';
 
 export function init() {
-  initRouter();
+  // Replace the initial browser history entry with the home marker so that
+  // pressing back from inside the game lands here instead of leaving the app.
+  history.replaceState({ isHome: true }, '', location.href);
+
+  initRouter(showHome);
   checkDeferredNotification(); // fires stored notification if 24h have passed since last visit
 
   document.addEventListener('keydown', (e) => {
@@ -102,7 +106,10 @@ function showWelcomeBack(username) {
     </div>
   `;
 
-  document.getElementById('home-continue').onclick = () => startGame();
+  document.getElementById('home-continue').onclick = () => {
+    document.body.dataset.username = username;
+    startGame();
+  };
   document.getElementById('home-newgame').onclick = () => {
     reset();
     showLogin();
@@ -134,6 +141,7 @@ function showCreateAccountDead() {
 
 async function handleLogin(username) {
   setUsername(username);
+  document.body.dataset.username = username;
   collectPlayerData(); // fire-and-forget — non-blocking
   if (checkTestMode()) return; // ?test=ending-b skips the game
   startGame();

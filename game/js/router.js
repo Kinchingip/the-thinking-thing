@@ -44,7 +44,7 @@ const KNOWN_PAGES_SET = [...new Set(KNOWN_PAGES)];
 
 let currentPageId = null;
 
-export function init() {
+export function init(onHome = () => {}) {
   document.addEventListener('click', (e) => {
     const link = e.target.closest('a[data-page]');
     if (!link) return;
@@ -53,6 +53,7 @@ export function init() {
   });
 
   window.addEventListener('popstate', (e) => {
+    if (e.state?.isHome) { onHome(); return; }
     const pageId = e.state?.pageId;
     if (pageId) navigate(pageId, false);
   });
