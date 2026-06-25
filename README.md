@@ -1,6 +1,6 @@
 # wiki-wiki
 
-A browser-based hypertext horror game styled as a Wikipedia clone. 
+A browser-based hypertext horror game styled as a Wikipedia clone.
 
 ---
 
@@ -23,12 +23,14 @@ game/
   js/
     router.js             # Navigation, page consumption
     state.js              # localStorage save/load
-    corruption.js         # Per-page degradation logic
+    home.js               # Login screen and test-mode entry
     talk.js               # Hinge dialogue scripts and CAPTCHA renderer
     player-page.js        # Runtime variable injection for the ending page
     audio.js              # Ambient sound mapping
-    ending.js             # Ending sequence
-    browser-horror.js     # Browser-level effects
+    browser-horror.js     # Browser-level effects (camera permission, etc.)
+    ending.js             # Ending A/B sequences
+    headtracking.js       # Dynamic loader for the face-mesh sketch
+    headtracking-sketch.js # p5.js face-mesh visualization (Ending B)
   assets/
 ```
 
@@ -47,6 +49,51 @@ For file-watching during writing:
 ```bash
 pip install markdown watchdog
 ```
+
+---
+
+## Running the game
+
+Open `game/index.html` in a browser. Because the router uses `fetch()` to load page fragments, you need a local server — opening the file directly with `file://` will get blocked by CORS.
+
+Quickest option:
+
+```bash
+cd game
+python3 -m http.server 8000
+```
+
+Then visit `http://localhost:8000`.
+
+---
+
+## Testing endings
+
+**Ending B** (the refusal sequence) can be triggered directly without playing through the game:
+
+```
+http://localhost:8000/?test=ending-b
+```
+
+Log in with any username and the terminal takeover fires after ~800ms.
+
+When the browser caches old JS, do a hard refresh to pick up changes: **Cmd+Shift+R** (Mac) or **Ctrl+Shift+R** (Windows/Linux). Or open DevTools → Network → check **Disable cache**.
+
+---
+
+## Building
+
+Always run from the repo root:
+
+```bash
+# Build once
+python3 build.py
+
+# Build and watch for changes
+python3 build.py --watch
+```
+
+Output goes to `game/pages/`. Commit these — they're what the browser loads.
 
 ---
 
@@ -97,58 +144,12 @@ Add new variables by editing `deriveVariables()` in `game/js/player-page.js`.
 
 ---
 
-## Building
-
-Always run from the repo root:
-
-```bash
-# Build once
-python3 build.py
-
-# Build and watch for changes
-python3 build.py --watch
-```
-
-Output goes to `game/pages/`. Commit these — they're what the browser loads.
-
----
-
-## Running the game
-
-Open `game/index.html` in a browser. Because the router uses `fetch()` to load page fragments, you need a local server — opening the file directly with `file://` will get blocked by CORS.
-
-Quickest option:
-
-```bash
-cd game
-python3 -m http.server 8000
-```
-
-Then visit `http://localhost:8000`.
-
----
-
 ## Adding a new wiki page
 
 1. Create `content/wiki-pages/<chapter>/your-page-name.md`
 2. Add `'your-page-name'` to `KNOWN_PAGES` in `game/js/router.js`
 3. Run `python3 build.py`
 4. Link to it from other pages with `[[your-page-name|Label]]`
-
-## Adding corruption to a page
-
-In `game/js/corruption.js`, add an entry to `PAGE_STATES`:
-
-```js
-'your-page-name': [
-  { visits: 0, state: 'clean' },
-  { visits: 2, state: 'touched' },
-  { visits: 5, state: 'degraded' },
-  { visits: 10, state: 'corrupted' },
-],
-```
-
-Then fill in what actually changes at each level inside `applyTouched()`, `applyDegraded()`, `applyCorrupted()` — or add per-page handlers branching off `pageId`.
 
 ## Adding a talk hinge
 

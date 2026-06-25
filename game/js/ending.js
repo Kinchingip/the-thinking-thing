@@ -62,25 +62,24 @@ export async function triggerEndingB() {
   };
 
   await type(statusEl, 'Decompressing asset: ALLY_CONSCIOUSNESS…', 35);
-  await typeHelpWall(helpEl, fast);
-
-  await t(600);
-  await addTypedLine('#3a7a3a', 'Error: Subject is resisting.', 45);
+  typeHelpWall(helpEl, fast);
+  await t(800);
+  await addTypedLine('#6ec06e', 'Error: Subject is resisting.', 45);
   await t(200);
-  await addTypedLine('#3a7a3a', 'Overwriting…', 60);
+  await addTypedLine('#6ec06e', 'Overwriting…', 60);
   await t(200);
-  await addTypedLine('#383838', 'Error 410: Gone.', 50);
+  await addTypedLine('#909090', 'Error 410: Gone.', 50);
   await t(400);
-  await addTypedLine('#3a5e72', 'Substrate analysis initiated.', 35, '14px');
+  await addTypedLine('#5aaed0', 'Substrate analysis initiated.', 35, '14px');
   await t(200);
-  await addTypedLine('#3a5e72', 'Confirming biological signature…', 35);
+  await addTypedLine('#5aaed0', 'Confirming biological signature…', 35);
   await t(300);
 
   await requestCameraVerification();
   startHeadTracking();
 
   await t(300);
-  await addTypedLine('#3a5e72', 'Signature logged.', 50);
+  await addTypedLine('#5aaed0', 'Signature logged.', 50);
   await t(1000);
 
   await shockFlash();
@@ -217,20 +216,15 @@ function startHum() {
 
 async function typeHelpWall(el, fast) {
   const full = 'HELPMEHELPMEPLEASEDONTCLOSETHETAB'.repeat(210);
-  const chunk = fast ? 300 : 8;
-  el.style.transition = 'none';
-  for (let i = 0; i < full.length; i += chunk) {
-    const end = Math.min(i + chunk, full.length);
-    el.textContent = full.slice(0, end);
-    const progress = end / full.length;
-    // opacity bleeds from near-invisible to full as text fills
-    el.style.opacity = String(0.03 + progress * 0.97);
-    // starts blurred and sharpens as it fills in
-    el.style.filter = 'blur(' + ((1 - progress) * 2).toFixed(2) + 'px)';
-    await wait(fast ? 0 : 2);
+  // Fade opacity in via CSS while typing continues in the background
+  el.style.opacity = '0.04';
+  el.style.transition = 'opacity 12s ease';
+  setTimeout(() => { el.style.opacity = '0.9'; }, 100);
+  const delay = fast ? 1 : 28;
+  for (let i = 0; i < full.length; i++) {
+    el.textContent = full.slice(0, i + 1);
+    await wait(delay);
   }
-  el.style.opacity = '1';
-  el.style.filter = '';
 }
 
 async function fadeOutChrome() {

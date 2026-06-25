@@ -453,7 +453,7 @@
 }
 
 .end-notif-label {
-  color: #561414;
+  color: #c04040;
   font-size: 10px;
   letter-spacing: 0.26em;
   text-transform: uppercase;
@@ -468,7 +468,7 @@
 }
 
 .end-conn-p1 {
-  color: #5e5c56;
+  color: #b0aea8;
   font-size: 13px;
   letter-spacing: 0.04em;
   line-height: 2;
@@ -476,10 +476,10 @@
 }
 
 #end-ip   { color: #beb132; font-weight: 700; letter-spacing: 0.07em; }
-#end-loc  { color: #5e5c56; }
+#end-loc  { color: #9e9c96; }
 
 .end-conn-p2 {
-  color: #454240;
+  color: #a0a09a;
   font-size: 12px;
   letter-spacing: 0.05em;
   margin: 0;
@@ -500,7 +500,7 @@
 }
 
 .end-thanks {
-  color: #341416;
+  color: #c09090;
   font-size: 13px;
   letter-spacing: 0.08em;
   margin: 0;
