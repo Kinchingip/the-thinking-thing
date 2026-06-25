@@ -51,6 +51,11 @@ export function init() {
     e.preventDefault();
     navigate(link.dataset.page);
   });
+
+  window.addEventListener('popstate', (e) => {
+    const pageId = e.state?.pageId;
+    if (pageId) navigate(pageId, false);
+  });
 }
 
 // Called by home.js after login — resumes at last known page or starts fresh.
@@ -59,7 +64,7 @@ export function startGame() {
   navigate(last && KNOWN_PAGES_SET.includes(last) ? last : 'harrow-wv');
 }
 
-export function navigate(pageId) {
+export function navigate(pageId, pushHistory = true) {
   if (!KNOWN_PAGES_SET.includes(pageId)) {
     showNotFound(pageId);
     return;
@@ -72,7 +77,7 @@ export function navigate(pageId) {
   const isTalk = pageId.startsWith('talk:');
 
   if (isTalk) {
-    updateChrome(pageId);
+    updateChrome(pageId, pushHistory);
     renderCaptcha(pageId, navigate);
     hideTalkTab();
     hideEditTab();
@@ -81,7 +86,7 @@ export function navigate(pageId) {
       .then((html) => {
         injectContent(html);
         afterPageLoad(pageId, visitCount);
-        updateChrome(pageId);
+        updateChrome(pageId, pushHistory);
       })
       .catch(() => showNotFound(pageId));
   }
@@ -114,7 +119,7 @@ function injectContent(html) {
 
 // ── chrome ────────────────────────────────────────────────────────────────────
 
-function updateChrome(pageId) {
+function updateChrome(pageId, pushHistory = true) {
   const isTalk = pageId.startsWith('talk:');
   const bare = isTalk ? pageId.replace('talk:', '') : pageId;
   const fallback = bare.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
@@ -130,7 +135,9 @@ function updateChrome(pageId) {
 
   document.getElementById('tab-article')?.classList.toggle('selected', !isTalk);
 
-  history.pushState({ pageId }, '', `#${pageId}`);
+  if (pushHistory) {
+    history.pushState({ pageId }, '', `#${pageId}`);
+  }
 }
 
 function hideTalkTab() {

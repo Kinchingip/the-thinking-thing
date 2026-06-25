@@ -43,6 +43,6 @@ function skipGate(gate) {
   gate.style.display = 'none';
   const gated = gate.nextElementSibling;
   if (gated && gated.classList.contains('gated-content')) {
-    gated.style.display = '';
+    gated.style.display = 'block';
   }
 }
