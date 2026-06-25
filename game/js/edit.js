@@ -131,7 +131,7 @@ function showHarrowCaptchaModal() {
 function revealNotablePeople() {
   const section = document.querySelector('.notable-people-section');
   if (section) {
-    section.style.display = '';
+    section.style.display = 'block';
     section.classList.add('notable-people-section--reveal');
   }
 }
