@@ -24,19 +24,44 @@ const CAPTCHAS = {
 
   ch1: {
     // Theme: Can you perceive humanly?
-    allyText: '', // TODO: Ally's ghost message for ch1
+    allyText: '',
     render(el) {
-      el.innerHTML = `<p class="captcha-placeholder">[Chapter 1 CAPTCHA — to be designed]</p>`;
-      // TODO: implement perception-based challenge
+      this._answer = null;
+      const self = this;
+
+      el.innerHTML = `
+        <div class="talk-thread">
+          <h2 class="talk-section-heading">Neutrality dispute: Cause of disappearance</h2>
+          <div class="talk-comment">
+            <p>The current framing of the "illness explanation" presents a single theory as settled fact. Multiple historians have disputed this. Flagging for neutral POV review.</p>
+            <p class="talk-sig">— <span class="talk-user">ArcanaEditor77</span> 14:32, 3 November 2024 (UTC)</p>
+          </div>
+          <div class="talk-comment talk-bot-comment">
+            <p><span class="talk-user talk-user--bot">WikiSentinel_bot</span>: This thread has been open for 30 days without resolution. Please indicate whether this dispute is ongoing.</p>
+            <div class="talk-bot-options">
+              <button class="talk-bot-opt" data-val="yes">[ Yes, dispute is ongoing ]</button>
+              <button class="talk-bot-opt" data-val="no">[ No, dispute has been resolved ]</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      el.querySelectorAll('.talk-bot-opt').forEach(btn => {
+        btn.addEventListener('click', () => {
+          el.querySelectorAll('.talk-bot-opt').forEach(b => b.classList.remove('talk-bot-opt--selected'));
+          btn.classList.add('talk-bot-opt--selected');
+          self._answer = btn.dataset.val;
+        });
+      });
     },
     validate() {
-      return false; // TODO: implement
+      return this._answer === 'yes';
     },
     onPass(navigate) {
-      navigate('henry-liang'); // TODO: correct next page after ch1 CAPTCHA
+      navigate('henry-liang');
     },
     onFail(_navigate) {
-      // TODO: consequence for failing ch1
+      // Player accepted the official story — stuck for now
     },
   },
 

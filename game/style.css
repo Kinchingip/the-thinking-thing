@@ -3,6 +3,7 @@
   Do not put layout here; vector.css handles that.
   This file owns: corruption effects, talk dialogue, logo fallback, link interception.
 */
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
 
 /* ── WikimediaUI/Codex design tokens (not publicly served by load.php) ── */
 :root {
@@ -44,71 +45,8 @@
 /* ── hide the real search form submission ── */
 #searchform { display: contents; }
 
-/* ── talk tab hidden until unlocked ── */
-#tab-talk { display: none; }
+/* #tab-talk hidden via inline style in index.html — not CSS, so JS can clear it */
 
-/* ──────────────────────────────────────────────
-   CORRUPTION STATES
-   Applied to #wiki-content via data-corruption-state
-   ────────────────────────────────────────────── */
-
-#wiki-content[data-corruption-state="touched"] {
-  /* Subtle: barely perceptible warm tint */
-  background: rgba(255, 200, 200, 0.03);
-}
-
-#wiki-content[data-corruption-state="degraded"] {
-  background: rgba(180, 0, 0, 0.05);
-  filter: contrast(1.02);
-}
-
-#wiki-content[data-corruption-state="corrupted"] {
-  filter: contrast(1.1) saturate(0.25);
-}
-
-/* Full corruption — body-level, applied by corruption.js */
-body.corrupted {
-  background: #0a0a0a !important;
-}
-
-body.corrupted .mw-body,
-body.corrupted .vector-header,
-body.corrupted .mw-footer {
-  background: #0f0f0f;
-  border-color: #1a1a1a;
-  color: #b0b0b0;
-}
-
-body.corrupted a,
-body.corrupted [data-page] {
-  color: #666;
-}
-
-/* ── glitch animation ── */
-.glitch {
-  animation: glitch 0.35s steps(1) infinite;
-}
-
-@keyframes glitch {
-  0%   { transform: none;          opacity: 1;   }
-  20%  { transform: skewX(-3deg);  opacity: 0.8; clip-path: inset(10% 0 80% 0); }
-  40%  { transform: skewX(3deg);   opacity: 1;   clip-path: inset(50% 0 30% 0); }
-  60%  { transform: none;                         clip-path: none; }
-  80%  { transform: translateX(2px); opacity: 0.7; }
-  100% { transform: none;          opacity: 1;   }
-}
-
-/* ── text corruption helpers (applied by corruption.js) ── */
-.corrupted-char {
-  color: #8b0000;
-  font-weight: bold;
-}
-
-.redacted {
-  background: #000;
-  color: transparent;
-  user-select: none;
-}
 
 /* ── talk / dialogue ── */
 .talk-line {
@@ -309,61 +247,264 @@ body.corrupted [data-page] {
   margin-top: 24px;
 }
 
-/* ── Ending B terminal ── */
+/* ── Talk page thread (CAPTCHAs rendered as Wikipedia talk sections) ── */
+.talk-thread {
+  border-top: 1px solid #a2a9b1;
+  padding-top: 16px;
+}
+
+.talk-section-heading {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin: 0 0 16px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #eaecf0;
+  color: #202122;
+}
+
+.talk-comment {
+  margin-bottom: 16px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.talk-comment p { margin: 0 0 4px; }
+
+.talk-bot-comment {
+  padding-left: 24px;
+  border-left: 2px solid #eaecf0;
+}
+
+.talk-sig {
+  font-size: 12px;
+  color: #72777d;
+  margin-top: 6px;
+}
+
+.talk-user { color: #3366cc; }
+.talk-user--bot { color: #54595d; font-style: italic; }
+
+.talk-bot-options {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.talk-bot-opt {
+  background: none;
+  border: 1px solid #a2a9b1;
+  color: #3366cc;
+  font-family: 'Linux Libertine', 'Georgia', serif;
+  font-size: 13px;
+  padding: 4px 10px;
+  cursor: pointer;
+  text-align: left;
+  border-radius: 2px;
+  width: fit-content;
+}
+
+.talk-bot-opt:hover { background: #eaf3ff; border-color: #3366cc; }
+
+.talk-bot-opt--selected {
+  background: #eaf3ff;
+  border-color: #3366cc;
+  font-weight: bold;
+  color: #2a4b8d;
+}
+
+/* ── Face-tracking canvas: screen blend makes black → transparent ── */
+#face-riot-canvas { mix-blend-mode: screen; }
+
+/* ── Ending B animations ── */
+@keyframes flicker {
+  0%, 100%  { opacity: 1; }
+  93%       { opacity: 1; }
+  93.8%     { opacity: 0.82; }
+  94.4%     { opacity: 1; }
+  96.8%     { opacity: 0.91; }
+  97.4%     { opacity: 1; }
+}
+
+@keyframes borderPulse {
+  0%, 100% {
+    box-shadow: 0 0 16px rgba(155,10,10,0.07), inset 0 0 14px rgba(155,10,10,0.03);
+    border-color: rgba(108,14,14,0.52);
+  }
+  50% {
+    box-shadow: 0 0 52px rgba(155,10,10,0.28), inset 0 0 32px rgba(155,10,10,0.1);
+    border-color: rgba(185,22,22,0.92);
+  }
+}
+
+@keyframes glitchHelp {
+  0%, 77%, 100% { transform: none; filter: none; }
+  78%  { transform: translateX(-10px) skewX(-6deg); filter: blur(1px) brightness(1.6); }
+  79%  { transform: translateX(10px) skewX(4deg); filter: none; }
+  80%  { transform: translateX(-5px) skewX(-1deg); }
+  81%  { transform: none; }
+  87%  { transform: translateX(-4px) skewX(-2deg); filter: blur(0.4px); }
+  88%  { transform: translateX(4px); filter: none; }
+  89%  { transform: translateX(-1px); }
+  90%  { transform: none; }
+}
+
+@keyframes lineAppear {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes chromaGlitch {
+  0%, 84%, 100% {
+    text-shadow: -3px 0 rgba(255,0,80,0.5), 3px 0 rgba(0,220,130,0.5);
+    filter: none; transform: none;
+  }
+  85% {
+    text-shadow: -14px 0 rgba(255,0,80,1), 10px 0 rgba(0,220,130,1), 0 0 28px rgba(255,20,20,0.5);
+    filter: blur(0.7px) brightness(1.7);
+    transform: translateX(-4px);
+  }
+  86% {
+    text-shadow: 10px 0 rgba(255,0,80,0.9), -7px 0 rgba(0,220,130,0.9);
+    transform: translateX(4px); filter: none;
+  }
+  87% {
+    text-shadow: -3px 0 rgba(255,0,80,0.5), 3px 0 rgba(0,220,130,0.5);
+    transform: none;
+  }
+}
+
+/* ── Ending B layout ── */
 #ending-b-terminal {
   position: fixed;
   inset: 0;
   background: #000;
   z-index: 9999;
-  display: flex;
-  align-items: flex-start;
-  padding: 48px;
-  box-sizing: border-box;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
-#term-output {
-  font-family: 'Courier New', Courier, monospace;
-  font-size: 15px;
-  color: #c8c8c8;
-  line-height: 1.7;
-  white-space: pre-wrap;
+#end-scanlines {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 30;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px, transparent 2px,
+    rgba(0,0,0,0.16) 2px, rgba(0,0,0,0.16) 4px
+  );
+}
+
+#end-vignette {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 29;
+  background: radial-gradient(ellipse at 50% 55%, transparent 24%, rgba(145,6,6,0.5) 100%);
+  opacity: 0;
+  transition: opacity 5s ease;
+}
+
+#end-main {
+  position: relative;
+  z-index: 10;
+  min-height: 100vh;
+  padding: 52px 56px 100px;
+  font-family: 'Share Tech Mono', 'Courier New', monospace;
+  background: #000;
+  animation: flicker 11s ease-in-out infinite;
+}
+
+#end-status {
+  color: #2c6a2c;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  margin: 0 0 32px;
+}
+
+#end-help {
+  color: #f0eeec;
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 1.54;
   word-break: break-all;
-  overflow-y: auto;
-  max-height: calc(100vh - 96px);
-  width: 100%;
-  background: transparent;
-  border: none;
-  padding: 0;
+  margin: 0 0 32px;
+  opacity: 0;
+  transition: opacity 0.9s ease;
+  animation: glitchHelp 9s ease-in-out infinite 2s;
+}
+
+#end-lines { font-size: 13px; letter-spacing: 0.045em; }
+
+.end-line {
+  margin: 0;
+  line-height: 2.1;
+}
+
+#end-notif {
+  margin-top: 64px;
+  border: 1px solid rgba(110,14,14,0.58);
+  padding: 40px 44px;
+  background: rgba(4,0,0,0.98);
+  animation: borderPulse 4.5s ease-in-out infinite;
+  opacity: 0;
+  transition: opacity 1.5s ease;
+}
+
+.end-notif-label {
+  color: #561414;
+  font-size: 10px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  margin: 0 0 28px;
+  font-weight: 400;
+}
+
+.end-conninfo {
+  border-left: 1px solid rgba(86,12,12,0.36);
+  padding-left: 20px;
+  margin-bottom: 52px;
+}
+
+.end-conn-p1 {
+  color: #5e5c56;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  line-height: 2;
+  margin: 0 0 6px;
+}
+
+#end-ip   { color: #beb132; font-weight: 700; letter-spacing: 0.07em; }
+#end-loc  { color: #5e5c56; }
+
+.end-conn-p2 {
+  color: #454240;
+  font-size: 12px;
+  letter-spacing: 0.05em;
   margin: 0;
 }
 
-.term-line { display: block; }
+.end-active { color: #7a2020; }
 
-.term-help-spam {
-  color: #fff;
-  font-weight: bold;
-  word-break: break-all;
+#end-wesee {
+  color: #e4e2de;
+  font-size: 46px;
+  margin: 0 0 44px;
+  line-height: 1;
+  opacity: 0;
+  letter-spacing: 0.44em;
+  transition: opacity 1.5s ease 0.2s, letter-spacing 1.5s ease 0.2s;
+  text-shadow: -3px 0 rgba(255,0,80,0.48), 3px 0 rgba(0,220,130,0.48);
+  animation: chromaGlitch 5s ease-in-out infinite 1s;
 }
 
-.term-cursor {
-  display: inline-block;
-  color: #c8c8c8;
-  animation: blink 1s step-end infinite;
-}
-
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0; }
-}
-
-.term-notification { margin-top: 24px; }
-
-.term-notif-header {
-  display: block;
-  color: #fff;
-  font-weight: bold;
-  margin-bottom: 8px;
+.end-thanks {
+  color: #341416;
   font-size: 13px;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
+  margin: 0;
+  line-height: 1.6;
 }
+
+#end-cursor { color: #4e1618; }

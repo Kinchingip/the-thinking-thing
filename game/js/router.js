@@ -1,7 +1,6 @@
 // router.js — handles all navigation. Pages are one-way: leaving a page consumes it.
 
 import { recordVisit, consumePage, isConsumed, setCurrentPage, getCurrentPage } from './state.js';
-import { applyCorruption } from './corruption.js';
 import { maybeShowTalkTab, renderCaptcha } from './talk.js';
 
 const PAGES_DIR = './pages/';
@@ -77,7 +76,6 @@ export function navigate(pageId) {
     fetchPage(pageId)
       .then((html) => {
         injectContent(html);
-        applyCorruption(pageId);
         maybeShowTalkTab(pageId, visitCount, navigate);
         updateChrome(pageId);
       })
