@@ -16,7 +16,7 @@ const KNOWN_PAGES = [
   'substrate-transcription',
   'harrow-wv',
   'voss-harland-instrumentation',
-  'lab-internal-wiki',
+  'internal-research-wiki',
   // Chapter 2 — The Residents
   'mayor-of-harrow',
   'mayor-journal',
