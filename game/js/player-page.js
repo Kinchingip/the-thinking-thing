@@ -30,12 +30,12 @@ function deriveVariables(state) {
   )[0] ?? 'none';
 
   return {
+    username: state.username ?? 'Anonymous',
     visit_count: totalClicks,
     pages_visited: pagesVisited.length,
     time_spent: minutes === 0 ? 'less than a minute' : `${minutes} minute${minutes !== 1 ? 's' : ''}`,
     most_visited_page: mostVisited.replace(/-/g, ' '),
     first_page: pagesVisited[0] ?? 'unknown',
     choices_made: state.choices.length,
-    // TODO: add more variables as story choices are written
   };
 }

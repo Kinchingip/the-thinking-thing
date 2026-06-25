@@ -1,7 +1,9 @@
 // router.js — handles all navigation. Pages are one-way: leaving a page consumes it.
 
-import { recordVisit, consumePage, isConsumed, setCurrentPage, getCurrentPage } from './state.js';
+import { recordVisit, setCurrentPage, getCurrentPage } from './state.js';
 import { maybeShowTalkTab, renderCaptcha } from './talk.js';
+import { initEditTab, initAllyPage, initPlayerPage } from './edit.js';
+import { initPasswordGates } from './password.js';
 
 const PAGES_DIR = './pages/';
 
@@ -13,20 +15,32 @@ const KNOWN_PAGES = [
   'the-cartographers',
   'substrate-transcription',
   'harrow-wv',
+  'voss-harland-instrumentation',
+  'lab-internal-wiki',
   // Chapter 2 — The Residents
+  'mayor-of-harrow',
+  'mayor-journal',
+  'newspaper-owner',
+  'harrow-courier',
+  'newspaper-owner-journal',
   'henry-liang',
   'muscipulavirus',
   'the-signal-remains',
   'survivor-name',
   // Chapter 3 — Ally
-  'ally',             // TODO: rename md file when written
+  'ally',
   // Endings
   'player-page',
+  // Utility
+  'list-of-residents',
   // Talk pages (CAPTCHAs)
   'talk:ch1',
   'talk:ch2',
   'talk:ch3',
 ];
+
+// Deduplicate (list-of-residents appeared twice in draft)
+const KNOWN_PAGES_SET = [...new Set(KNOWN_PAGES)];
 
 let currentPageId = null;
 
@@ -42,24 +56,13 @@ export function init() {
 // Called by home.js after login — resumes at last known page or starts fresh.
 export function startGame() {
   const last = getCurrentPage();
-  navigate(last && KNOWN_PAGES.includes(last) ? last : 'harrow-wv');
+  navigate(last && KNOWN_PAGES_SET.includes(last) ? last : 'harrow-wv');
 }
 
 export function navigate(pageId) {
-  // Consumed pages show a tombstone — no going back.
-  if (isConsumed(pageId)) {
-    showTombstone(pageId);
-    return;
-  }
-
-  if (!KNOWN_PAGES.includes(pageId)) {
+  if (!KNOWN_PAGES_SET.includes(pageId)) {
     showNotFound(pageId);
     return;
-  }
-
-  // Consume the page we're leaving before loading the new one.
-  if (currentPageId && currentPageId !== pageId) {
-    consumePage(currentPageId);
   }
 
   currentPageId = pageId;
@@ -69,20 +72,33 @@ export function navigate(pageId) {
   const isTalk = pageId.startsWith('talk:');
 
   if (isTalk) {
-    // CAPTCHAs are generated in JS, not fetched from disk.
     updateChrome(pageId);
     renderCaptcha(pageId, navigate);
     hideTalkTab();
+    hideEditTab();
   } else {
     fetchPage(pageId)
       .then((html) => {
         injectContent(html);
-        maybeShowTalkTab(pageId, visitCount, navigate);
+        afterPageLoad(pageId, visitCount);
         updateChrome(pageId);
       })
       .catch(() => showNotFound(pageId));
   }
 }
+
+// ── post-load initialisation ──────────────────────────────────────────────────
+
+function afterPageLoad(pageId, visitCount) {
+  initPasswordGates();
+  initEditTab(pageId, navigate);
+  maybeShowTalkTab(pageId, visitCount, navigate);
+
+  if (pageId === 'ally') initAllyPage();
+  if (pageId === 'player-page') initPlayerPage();
+}
+
+// ── fetch / inject ────────────────────────────────────────────────────────────
 
 async function fetchPage(pageId) {
   const res = await fetch(`${PAGES_DIR}${pageId}.html`);
@@ -96,17 +112,22 @@ function injectContent(html) {
   window.scrollTo(0, 0);
 }
 
+// ── chrome ────────────────────────────────────────────────────────────────────
+
 function updateChrome(pageId) {
   const isTalk = pageId.startsWith('talk:');
   const bare = isTalk ? pageId.replace('talk:', '') : pageId;
-  const title = bare.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  const fallback = bare.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+
+  const articleH1 = !isTalk && document.querySelector('#wiki-content h1');
+  const title = articleH1 ? articleH1.textContent.trim() : fallback;
+  if (articleH1) articleH1.remove();
   const display = isTalk ? `Talk:${title}` : title;
 
   document.title = `${display} — WikiWiki`;
   const heading = document.getElementById('page-title');
   if (heading) heading.textContent = display;
 
-  // Mark the article vs talk tab as active
   document.getElementById('tab-article')?.classList.toggle('selected', !isTalk);
 
   history.pushState({ pageId }, '', `#${pageId}`);
@@ -117,25 +138,12 @@ function hideTalkTab() {
   if (tab) tab.style.display = 'none';
 }
 
-// ── special states ──
-
-function showTombstone(pageId) {
-  const title = pageId.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-  const content = document.getElementById('wiki-content');
-  if (content) {
-    content.innerHTML = `
-      <div class="mw-message-box mw-message-box-error tombstone">
-        <p><b>This page has been deleted.</b></p>
-        <p>The page "<i>${title}</i>" has been removed from WikiWiki.
-           The deletion log for this page provides a record of recent deletions.</p>
-        <p class="tombstone-log">Deletion log · <a data-page="list-of-residents">Contents</a></p>
-      </div>
-    `;
-  }
-  document.title = `${title} — WikiWiki`;
-  const heading = document.getElementById('page-title');
-  if (heading) heading.textContent = title;
+function hideEditTab() {
+  const tab = document.getElementById('tab-edit');
+  if (tab) tab.style.display = 'none';
 }
+
+// ── special states ────────────────────────────────────────────────────────────
 
 function showNotFound(pageId) {
   const content = document.getElementById('wiki-content');

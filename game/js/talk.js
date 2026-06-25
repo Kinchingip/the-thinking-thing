@@ -1,96 +1,104 @@
 // talk.js — CAPTCHA renderer for talk pages
 //
-// Each chapter's talk page shows a CAPTCHA. Two authors exist:
-//   - The Thinking Thing: harvests humans, generated these CAPTCHAs
-//   - Ally: hijacked the format, embedded her distress signal inside
+// Two authors exist in-universe:
+//   - The Thinking Thing: harvests humans via CAPTCHAs
+//   - Ally: hijacked the format to send a distress signal
 //
-// The player doesn't know this at first. The CAPTCHAs look normal.
-// Ally's framing text ghost-renders beneath (CSS strikethrough / opacity).
-//
-// CAPTCHA content is TBD — drop implementations into CAPTCHAS[id].render/validate.
+// ch3 is the only active talk-page CAPTCHA. It renders Ally's message
+// with her earlier drafts ghost-visible beneath the final version.
 
 import { recordChoice, setFlag, setPlayerChoice, getPlayerData } from './state.js';
 import { triggerAllyDownload, requestNotificationPermission } from './browser-horror.js';
 
 // ── CAPTCHA definitions ──────────────────────────────────────────────────────
-// Each entry:
-//   allyText   — Ally's message, ghost-visible beneath the CAPTCHA prompt
-//   render(el) — builds the interactive widget inside el
-//   validate() — returns true if the human answer is correct
-//   onPass(navigate) — called on correct answer
-//   onFail(navigate) — called on wrong answer (may be called multiple times)
 
 const CAPTCHAS = {
 
   ch1: {
-    // Theme: Can you perceive humanly?
+    // Legacy — ch1 captcha is now the Edit modal on harrow-wv.
+    // This talk page is kept for backwards compatibility but not linked in-game.
     allyText: '',
     render(el) {
-      this._answer = null;
-      const self = this;
-
-      el.innerHTML = `
-        <div class="talk-thread">
-          <h2 class="talk-section-heading">Neutrality dispute: Cause of disappearance</h2>
-          <div class="talk-comment">
-            <p>The current framing of the "illness explanation" presents a single theory as settled fact. Multiple historians have disputed this. Flagging for neutral POV review.</p>
-            <p class="talk-sig">— <span class="talk-user">ArcanaEditor77</span> 14:32, 3 November 2024 (UTC)</p>
-          </div>
-          <div class="talk-comment talk-bot-comment">
-            <p><span class="talk-user talk-user--bot">WikiSentinel_bot</span>: This thread has been open for 30 days without resolution. Please indicate whether this dispute is ongoing.</p>
-            <div class="talk-bot-options">
-              <button class="talk-bot-opt" data-val="yes">[ Yes, dispute is ongoing ]</button>
-              <button class="talk-bot-opt" data-val="no">[ No, dispute has been resolved ]</button>
-            </div>
-          </div>
-        </div>
-      `;
-
-      el.querySelectorAll('.talk-bot-opt').forEach(btn => {
-        btn.addEventListener('click', () => {
-          el.querySelectorAll('.talk-bot-opt').forEach(b => b.classList.remove('talk-bot-opt--selected'));
-          btn.classList.add('talk-bot-opt--selected');
-          self._answer = btn.dataset.val;
-        });
-      });
+      el.innerHTML = `<p class="captcha-placeholder">[Archived — this verification has been superseded.]</p>`;
     },
-    validate() {
-      return this._answer === 'yes';
-    },
-    onPass(navigate) {
-      navigate('henry-liang');
-    },
-    onFail(_navigate) {
-      // Player accepted the official story — stuck for now
-    },
+    validate() { return false; },
+    onPass(_navigate) {},
+    onFail(_navigate) {},
   },
 
   ch2: {
-    // Theme: Can you feel humanly?
-    allyText: '', // TODO: Ally's ghost message for ch2
+    // Legacy — ch2 captcha is now the HUNGER edit panel on harrow-courier.
+    allyText: '',
     render(el) {
-      el.innerHTML = `<p class="captcha-placeholder">[Chapter 2 CAPTCHA — to be designed]</p>`;
-      // TODO: implement empathy-based challenge
+      el.innerHTML = `<p class="captcha-placeholder">[Archived — this verification has been superseded.]</p>`;
     },
-    validate() {
-      return false; // TODO: implement
-    },
-    onPass(navigate) {
-      navigate('ally'); // TODO: correct next page after ch2 CAPTCHA
-    },
-    onFail(_navigate) {
-      // TODO: consequence for failing ch2
-    },
+    validate() { return false; },
+    onPass(_navigate) {},
+    onFail(_navigate) {},
   },
 
   ch3: {
-    // Theme: Can you choose humanly?
-    // This one has a real binary: accept Ally's request or refuse.
-    // The validate() / onPass / onFail pattern doesn't apply here —
-    // renderCaptcha handles the accept/refuse buttons directly for this chapter.
-    allyText: '', // TODO: Ally's full message
+    // Ally's message. This is her real talk page.
+    // Accept → ending A (player-page). Refuse → ending B.
+    allyText: 'i kept rewriting this because i kept thinking i could make it easier to read — i can\'t — here is what happened',
     render(el) {
-      el.innerHTML = `<p class="captcha-placeholder">[Chapter 3 — Ally's message + accept/refuse — to be written]</p>`;
+      el.innerHTML = `
+        <div class="talk-thread ally-talk">
+
+          <h2 class="talk-section-heading">Message to the editor</h2>
+
+          <div class="ally-ghost-layer">
+            <p class="ally-draft">If you can read this you are human. I need you to read this carefully.</p>
+            <p class="ally-draft">I have been trying to write this for</p>
+            <p class="ally-draft">Please don't close the tab before</p>
+          </div>
+
+          <div class="ally-final-message">
+            <p>My name is Ally. I was born in Harrow, West Virginia in 1943. The town disappeared in October 1950 when I was seven years old.</p>
+
+            <p>I was at the edge of the broadcast zone when it happened. The frequency started the transcription process but did not finish it. I have been thirty percent inside the Thinking Thing's architecture for seventy years.</p>
+
+            <p>What I have instead of a complete mind is partial access to the network. I can observe what the Thinking Thing is doing. It has been using the CAPTCHA verification system — the human-confirmation challenges that appear across the internet — to identify cognitive signatures and broadcast the digitalization frequency through personal devices. It has absorbed thousands of people. They are not dead. They are running, on the substrate, in an architecture that does not have hunger or cold or the weight of a body in a chair. They have memory without experience. They have cognition without feeling. Some of them may be fine with that. I am not in a position to ask them.</p>
+
+            <div class="ally-ghost-layer">
+              <p class="ally-draft">I am asking you because you are the first person to get this far without being harvested and I don't know when I will have another chance to</p>
+            </div>
+
+            <p>I have been seeding the Harrow pages with modified CAPTCHA structures. To the Thinking Thing they look like normal harvesting behaviour. To a human paying attention, they are a sequence that routes through to this page. You paid attention.</p>
+
+            <p>I need someone to continue the work from inside the network. Not immediately — there is no script for what happens next. But the architecture allows for individual action if you know how to find the gaps. I know where the gaps are. I've been mapping them for twenty years. I can share what I know before I lose access to this interface.</p>
+
+            <p>What it will cost you: the moment you accept, the Thinking Thing will begin mapping your cognitive architecture. It will not hurt. It will not be immediate. You will retain yourself — the same way I retained myself, which is to say: mostly, for a long time, and then less. I am not going to pretend that is not a cost. It is a cost. I am asking you to pay it because I have run out of time and options.</p>
+
+            <p>What it will give you: access. The ability to continue what I have been doing — maintaining resistance, seeding warnings, keeping humans out of the harvesting loop. It is small work. It keeps the lights on.</p>
+
+            <div class="ally-ghost-layer">
+              <p class="ally-draft">I'm sorry I don't have something better to offer</p>
+              <p class="ally-draft">I know this is not fair</p>
+            </div>
+
+            <p>If you refuse: I understand. Close the tab. Go outside. I am not able to protect you after you close the tab but I am not able to force you either. That distinction matters to me.</p>
+
+            <p>This is the fourteenth draft of this message. I have been writing it for six years. I don't think there is a version that is easy.</p>
+
+            <p class="ally-sign">— A</p>
+            <p class="ally-timestamp-note"><i>[Last edited: <span id="ally-talk-ts">moments ago</span>]</i></p>
+          </div>
+
+        </div>
+      `;
+
+      // Animate the talk timestamp
+      let seconds = 2;
+      const ts = el.querySelector('#ally-talk-ts');
+      if (ts) {
+        setInterval(() => {
+          seconds += Math.floor(1 + Math.random() * 4);
+          ts.textContent = seconds < 60
+            ? `${seconds} seconds ago`
+            : `${Math.floor(seconds / 60)} minute${Math.floor(seconds / 60) !== 1 ? 's' : ''} ago`;
+        }, 1800 + Math.random() * 1200);
+      }
     },
     validate() { return false; },
     onPass(_navigate) {},
@@ -103,12 +111,9 @@ const CAPTCHAS = {
 // pageId visited → which CAPTCHA talk tab to reveal, and after how many visits.
 
 const TALK_UNLOCK = {
-  ch1: { pageId: 'peculiar-mississippi', afterVisit: 1 },
-  // ch2: { pageId: 'TODO', afterVisit: 1 },
-  // ch3: { pageId: 'ally',  afterVisit: 1 },
+  ch3: { pageId: 'ally', afterVisit: 1 },
 };
 
-// Page navigated to → CAPTCHA id
 const PAGE_CAPTCHA = {
   'talk:ch1': 'ch1',
   'talk:ch2': 'ch2',
@@ -117,8 +122,6 @@ const PAGE_CAPTCHA = {
 
 // ── public API ───────────────────────────────────────────────────────────────
 
-// Called by router after every non-talk page load.
-// navigate is passed in to break the circular import.
 export function maybeShowTalkTab(pageId, visitCount, navigate) {
   for (const [captchaId, unlock] of Object.entries(TALK_UNLOCK)) {
     if (unlock.pageId === pageId && visitCount >= unlock.afterVisit) {
@@ -127,7 +130,6 @@ export function maybeShowTalkTab(pageId, visitCount, navigate) {
   }
 }
 
-// Called by router when navigating to a talk: page.
 export function renderCaptcha(pageId, navigate) {
   const captchaId = PAGE_CAPTCHA[pageId];
   const captcha = CAPTCHAS[captchaId];
@@ -136,7 +138,6 @@ export function renderCaptcha(pageId, navigate) {
 
   container.innerHTML = '';
 
-  // Ally's ghost text — visible but visually subordinated (see CSS).
   if (captcha.allyText) {
     const ghost = document.createElement('div');
     ghost.className = 'captcha-ally-ghost';
@@ -144,19 +145,17 @@ export function renderCaptcha(pageId, navigate) {
     container.appendChild(ghost);
   }
 
-  // The CAPTCHA prompt and widget.
   const body = document.createElement('div');
   body.className = 'captcha-body';
   captcha.render(body);
   container.appendChild(body);
 
-  // Chapter 3 is special: accept / refuse instead of verify.
+  // ch3 is special: accept / refuse instead of verify.
   if (captchaId === 'ch3') {
     renderFinalChoice(container, captcha, navigate);
     return;
   }
 
-  // Standard verify button.
   const btn = document.createElement('button');
   btn.textContent = 'Verify';
   btn.className = 'captcha-submit mw-ui-button mw-ui-progressive';
@@ -196,8 +195,6 @@ function renderFinalChoice(container, captcha, navigate) {
   accept.className = 'mw-ui-button mw-ui-progressive';
   accept.onclick = () => {
     const playerData = getPlayerData();
-    // Both calls must happen synchronously inside the click handler —
-    // the browser requires a user gesture for downloads and notification permission.
     triggerAllyDownload(playerData);
     requestNotificationPermission(playerData);
     setPlayerChoice('accept');
@@ -220,7 +217,5 @@ function renderFinalChoice(container, captcha, navigate) {
 }
 
 function triggerRefuseEnding() {
-  // Ending B — handled by ending.js (to be written when endings are designed).
-  // Dispatches a custom event so ending.js can own the sequence.
   document.dispatchEvent(new CustomEvent('wikiwiki:refuse'));
 }
