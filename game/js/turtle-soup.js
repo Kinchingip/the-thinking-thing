@@ -194,6 +194,41 @@ async function runFinalSequence(storyEl, gridEl) {
     iface.classList.add('ts-interface--done');
     setTimeout(() => { iface.style.display = 'none'; }, 700);
   }
+
+  runSignalHorror();
+}
+
+async function runSignalHorror() {
+  const username = document.body.dataset.username || '';
+
+  await wait(3000);
+
+  // Footer acknowledgement
+  const footer = document.getElementById('footer-info-lastmod');
+  if (footer) footer.textContent = 'This session has been indexed.';
+
+  await wait(2000);
+
+  // Screen flicker
+  const flicker = document.createElement('div');
+  flicker.className = 'ts-flicker-overlay';
+  document.body.appendChild(flicker);
+  await wait(500);
+  flicker.remove();
+
+  await wait(600);
+
+  // Page title glitch — shows username, reverts, then stays
+  const titleEl = document.getElementById('page-title');
+  if (titleEl && username) {
+    const orig = titleEl.textContent;
+    titleEl.textContent = username;
+    await wait(700);
+    titleEl.textContent = orig;
+    await wait(1000);
+    titleEl.textContent = username;
+    document.title = `${username} — WikiWiki`;
+  }
 }
 
 function addReveal(container, text, animate) {
