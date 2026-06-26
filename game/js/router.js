@@ -4,6 +4,7 @@ import { recordVisit, setCurrentPage, getCurrentPage } from './state.js';
 import { maybeShowTalkTab, renderCaptcha } from './talk.js';
 import { initEditTab, initAllyPage, initPlayerPage } from './edit.js';
 import { initPasswordGates } from './password.js';
+import { initTurtleSoup } from './turtle-soup.js';
 
 const PAGES_DIR = './pages/';
 
@@ -102,6 +103,7 @@ function afterPageLoad(pageId, visitCount) {
 
   if (pageId === 'ally') initAllyPage();
   if (pageId === 'player-page') initPlayerPage();
+  if (pageId === 'the-signal-remains') initTurtleSoup();
 }
 
 // ── fetch / inject ────────────────────────────────────────────────────────────
