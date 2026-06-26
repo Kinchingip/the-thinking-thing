@@ -211,28 +211,20 @@ async function runFinalSequence(storyEl, gridEl) {
 async function runSignalHorror() {
   const username = document.body.dataset.username || '';
 
-  await wait(2000);
-
-  for (let i = 0; i < 10; i++) {
-    await showHungerPopup(i);
-
-    if (i === 2 || i === 5 || i === 8) {
-      const flicker = document.createElement('div');
-      flicker.className = 'ts-flicker-overlay';
-      document.body.appendChild(flicker);
-      await wait(500);
-      flicker.remove();
-    }
-
-    await wait(Math.max(180, 550 - i * 45));
-  }
-
-  await wait(1500);
+  await wait(3000);
 
   const footer = document.getElementById('footer-info-lastmod');
   if (footer) footer.textContent = 'This session has been indexed.';
 
-  await wait(1000);
+  await wait(2000);
+
+  const flicker = document.createElement('div');
+  flicker.className = 'ts-flicker-overlay';
+  document.body.appendChild(flicker);
+  await wait(500);
+  flicker.remove();
+
+  await wait(600);
 
   const titleEl = document.getElementById('page-title');
   if (titleEl && username) {
@@ -244,42 +236,6 @@ async function runSignalHorror() {
     titleEl.textContent = username;
     document.title = `${username} — WikiWiki`;
   }
-}
-
-function showHungerPopup(index) {
-  return new Promise((resolve) => {
-    const overlay = document.createElement('div');
-    overlay.className = 'hunger-overlay';
-
-    const box = document.createElement('div');
-    box.className = 'hunger-box';
-
-    const text = document.createElement('div');
-    text.className = `hunger-text hunger-text--l${Math.min(Math.floor(index / 3), 3)}`;
-    text.textContent = 'HUNGER';
-
-    const btn = document.createElement('button');
-    btn.className = 'hunger-dismiss';
-    btn.textContent = '×';
-
-    let resolved = false;
-    const done = () => {
-      if (resolved) return;
-      resolved = true;
-      overlay.classList.remove('hunger-overlay--in');
-      setTimeout(() => { overlay.remove(); resolve(); }, 180);
-    };
-
-    btn.addEventListener('click', done);
-    setTimeout(done, Math.max(900, 3000 - index * 220));
-
-    box.appendChild(text);
-    box.appendChild(btn);
-    overlay.appendChild(box);
-    document.body.appendChild(overlay);
-
-    requestAnimationFrame(() => overlay.classList.add('hunger-overlay--in'));
-  });
 }
 
 function addReveal(container, text, animate) {
