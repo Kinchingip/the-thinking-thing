@@ -1,5 +1,7 @@
 // turtle-soup.js — "The Signal Remains" lateral thinking puzzle
 
+import { setFlag, getFlag } from './state.js';
+
 const SAVE_KEY = 'ts_signal_round';
 
 const ROUNDS = [
@@ -101,9 +103,18 @@ const FINAL_TEXT   = "They found the internet in 1993. They have not stopped sin
 export function initTurtleSoup() {
   const storyEl = document.getElementById('ts-story');
   const gridEl  = document.getElementById('ts-questions-grid');
+  const ifaceEl = document.getElementById('ts-interface');
   if (!storyEl || !gridEl) return;
 
-  let round = parseInt(localStorage.getItem(SAVE_KEY) || '0', 10);
+  // Chapter gate: requires completing chapter 1 (harrow-wv edit captcha)
+  if (!getFlag('edit_harrow_wv_passed')) {
+    if (ifaceEl) ifaceEl.style.display = 'none';
+    storyEl.innerHTML = '<p class="ts-locked"><i>This article is not yet available for expansion. Further research may be required.</i></p>';
+    return;
+  }
+
+  const raw = getFlag(SAVE_KEY);
+  let round = raw ? parseInt(String(raw), 10) : 0;
   if (isNaN(round) || round < 0) round = 0;
 
   // Rebuild all previous reveals without animation
@@ -113,8 +124,7 @@ export function initTurtleSoup() {
 
   if (round >= ROUNDS.length) {
     addReveal(storyEl, FINAL_TEXT, false);
-    const iface = document.getElementById('ts-interface');
-    if (iface) iface.style.display = 'none';
+    if (ifaceEl) ifaceEl.style.display = 'none';
     hideStubNotice();
     return;
   }
@@ -164,7 +174,7 @@ function onAnswer(btn, question, round, roundIdx, storyEl, gridEl) {
     setTimeout(() => {
       addReveal(storyEl, round.reveal, true);
       const next = roundIdx + 1;
-      localStorage.setItem(SAVE_KEY, next);
+      setFlag(SAVE_KEY, next);
       setTimeout(() => renderRound(next, storyEl, gridEl), 1200);
     }, 600);
   }
@@ -184,7 +194,7 @@ async function runFinalSequence(storyEl, gridEl) {
   const p = addReveal(storyEl, '', true);
   await typeInto(p, FINAL_TEXT, 30);
 
-  localStorage.setItem(SAVE_KEY, ROUNDS.length);
+  setFlag(SAVE_KEY, ROUNDS.length);
   hideStubNotice();
 
   await wait(2000);
