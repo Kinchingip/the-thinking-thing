@@ -9,7 +9,7 @@ const RATES = [0, 0.04, 0.11, 0.24, 0.40];
 export function applyDisintegration(pageId, visitCount) {
   if (SKIP_PAGES.has(pageId) || pageId.startsWith('talk:')) return;
 
-  const level = Math.min(visitCount - 1, 4);
+  const level = Math.min(Math.floor((visitCount - 1) / 2), 4);
   if (level <= 0) return;
 
   const content = document.getElementById('wiki-content');
