@@ -1249,6 +1249,35 @@
   margin: 4px 0 8px;
 }
 
+/* ── page disintegration (cumulative: level 3 also has dis-1 and dis-2 classes) ── */
+#wiki-content.dis-1 p,
+#wiki-content.dis-1 li { opacity: 0.97; }
+
+#wiki-content.dis-2 p,
+#wiki-content.dis-2 li {
+  filter: blur(0.12px);
+  opacity: 0.94;
+}
+
+#wiki-content.dis-3 p,
+#wiki-content.dis-3 li,
+#wiki-content.dis-3 h2,
+#wiki-content.dis-3 h3 {
+  filter: blur(0.28px);
+  opacity: 0.86;
+  letter-spacing: 0.015em;
+}
+
+#wiki-content.dis-4 p,
+#wiki-content.dis-4 li,
+#wiki-content.dis-4 h2,
+#wiki-content.dis-4 h3 {
+  filter: blur(0.55px) contrast(0.94);
+  opacity: 0.74;
+  letter-spacing: 0.03em;
+  line-height: 1.78;
+}
+
 /* ── turtle soup: The Signal Remains ── */
 .wiki-stub-notice {
   border: 1px solid #a2a9b1;

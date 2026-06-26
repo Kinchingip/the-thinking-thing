@@ -5,6 +5,8 @@ import { maybeShowTalkTab, renderCaptcha } from './talk.js';
 import { initEditTab, initAllyPage, initPlayerPage } from './edit.js';
 import { initPasswordGates } from './password.js';
 import { initTurtleSoup } from './turtle-soup.js';
+import { applyDisintegration } from './disintegrate.js';
+import { initRiskTracker, recordNavigation } from './risk-tracker.js';
 
 const PAGES_DIR = './pages/';
 
@@ -46,6 +48,8 @@ const KNOWN_PAGES_SET = [...new Set(KNOWN_PAGES)];
 let currentPageId = null;
 
 export function init(onHome = () => {}) {
+  initRiskTracker();
+
   document.addEventListener('click', (e) => {
     const link = e.target.closest('a[data-page]');
     if (!link) return;
@@ -72,6 +76,7 @@ export function navigate(pageId, pushHistory = true) {
     return;
   }
 
+  recordNavigation();
   currentPageId = pageId;
   setCurrentPage(pageId);
   const visitCount = recordVisit(pageId);
@@ -100,6 +105,7 @@ function afterPageLoad(pageId, visitCount) {
   initPasswordGates();
   initEditTab(pageId, navigate);
   maybeShowTalkTab(pageId, visitCount, navigate);
+  applyDisintegration(pageId, visitCount);
 
   if (pageId === 'ally') initAllyPage();
   if (pageId === 'player-page') initPlayerPage();
