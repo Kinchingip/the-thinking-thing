@@ -449,6 +449,47 @@
   transition: opacity 5s ease;
 }
 
+/* Centered stage for the new Ending B layout */
+#end-center-stage {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  padding: 40px;
+  text-align: center;
+  gap: 32px;
+}
+
+#end-ally-msg {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-style: italic;
+  font-size: 2.8rem;
+  color: #e4e0dc;
+  letter-spacing: 0.02em;
+  line-height: 1.25;
+  max-width: 680px;
+  text-shadow: 0 0 50px rgba(255,255,255,0.05);
+  opacity: 0;
+}
+
+#end-sys-msg {
+  font-family: 'Share Tech Mono', 'Courier New', monospace;
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  opacity: 0;
+}
+
+#end-hello-text {
+  font-family: 'Share Tech Mono', 'Courier New', monospace;
+  font-size: 2.4rem;
+  color: #c8c4c0;
+  letter-spacing: 0.16em;
+  opacity: 0;
+}
+
 #end-main {
   position: relative;
   z-index: 10;

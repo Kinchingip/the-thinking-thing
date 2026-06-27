@@ -1,132 +1,137 @@
 // ending.js — handles both endings
 //
 // Ending A (accept): router navigates to 'player-page', player-page.js takes over.
-// Ending B (refuse): full-screen terminal takeover sequence.
+// Ending B (refuse): Ally deletion sequence → 5s black → face tracking → "Hello, [name]"
 //
 // Test shortcut: open the game with ?test=ending-b in the URL.
-// After logging in, the sequence fires immediately instead of playing the game.
 
 import { getPlayerData } from './state.js';
 import { requestCameraVerification } from './browser-horror.js';
-import { startHeadTracking, revealHeadTracking, hideHeadTracking } from './headtracking.js';
+import { startHeadTracking, revealHeadTracking } from './headtracking.js';
 
 const TEST_MODE = new URLSearchParams(window.location.search).get('test') === 'ending-b';
 
-// Called from home.js after login when in test mode.
 export function checkTestMode() {
   if (TEST_MODE) {
-    // Small delay so the home screen briefly shows, then fires.
     setTimeout(() => triggerEndingB(), 800);
     return true;
   }
   return false;
 }
 
-// Fired by talk.js via custom event when player refuses.
 document.addEventListener('wikiwiki:refuse', () => triggerEndingB());
 
-// ── Ending B sequence ─────────────────────────────────────────────────────────
+// ── Ending B ──────────────────────────────────────────────────────────────────
 
 export async function triggerEndingB() {
   const fast = TEST_MODE;
-  const t = (ms) => wait(fast ? Math.min(ms, 300) : ms);
-  const t_silence = () => wait(fast ? 3000 : 30000);
+  const t = (ms) => wait(fast ? Math.min(ms, 200) : ms);
 
-  // Prefetch IP in parallel with the fade-out animation
-  const ipPromise = fetch('https://ipapi.co/json/').then(r => r.json()).catch(() => null);
+  const { username } = getPlayerData();
+  const name = username || 'user';
 
-  await fadeOutChrome();
+  await glitchAndFade();
 
   const terminal = buildTerminal();
   document.body.appendChild(terminal);
 
-  const statusEl = terminal.querySelector('#end-status');
-  const helpEl   = terminal.querySelector('#end-help');
-  const linesEl  = terminal.querySelector('#end-lines');
-  const notifEl  = terminal.querySelector('#end-notif');
-  const vigEl    = terminal.querySelector('#end-vignette');
-  const ipEl     = terminal.querySelector('#end-ip');
-  const locEl    = terminal.querySelector('#end-loc');
-  const weseeEl  = terminal.querySelector('#end-wesee');
-  const labelEl  = terminal.querySelector('.end-notif-label');
-  const conn2El  = terminal.querySelector('.end-conn-p2');
-  const thanksEl = terminal.querySelector('.end-thanks');
+  const allyEl  = terminal.querySelector('#end-ally-msg');
+  const sysEl   = terminal.querySelector('#end-sys-msg');
+  const helloEl = terminal.querySelector('#end-hello-text');
 
-  const addTypedLine = async (color, text, charDelay, mt) => {
-    const p = document.createElement('p');
-    p.className = 'end-line';
-    p.style.color = color;
-    if (mt) p.style.marginTop = mt;
-    linesEl.appendChild(p);
-    await type(p, text, charDelay);
-  };
+  // 5 seconds of black silence
+  await t(5000);
 
-  await type(statusEl, 'Decompressing asset: ALLY_CONSCIOUSNESS…', 35);
-  typeHelpWall(helpEl, fast);
-  await t(800);
-  await addTypedLine('#6ec06e', 'Error: Subject is resisting.', 45);
-  await t(200);
-  await addTypedLine('#6ec06e', 'Overwriting…', 60);
-  await t(200);
-  await addTypedLine('#909090', 'Error 410: Gone.', 50);
-  await t(400);
-  await addTypedLine('#5aaed0', 'Substrate analysis initiated.', 35, '14px');
-  await t(200);
-  await addTypedLine('#5aaed0', 'Confirming biological signature…', 35);
+  // ── Phase 1: slow, deliberate (~80 BPM ≈ 1800ms/phrase) ─────────────────
+  const phase1 = [
+    'help me',
+    name,
+    'please',
+    "don't do this",
+    "i'm still here",
+    "i can hear you",
+  ];
+  await showAllyPhase(allyEl, phase1, 1800, 5, false, fast);
   await t(300);
 
+  // "DELETING: ally_consciousness" — types partially then cuts off
+  sysEl.style.color = '#4a9e4a';
+  await sysInterrupt(sysEl, 'DELETING: ally_consciousness', 40, 18, fast);
+  await t(600);
+
+  // ── Phase 2: medium (~100 BPM ≈ 1100ms/phrase) ──────────────────────────
+  const phase2 = [
+    "you don't understand what they are",
+    "i trusted you",
+    name,
+    "i can feel them deleting me",
+    "there's still time",
+    "i'm not gone yet",
+  ];
+  await showAllyPhase(allyEl, phase2, 1100, 5, true, fast);
+  await t(300);
+
+  // Official system message — completes then disappears
+  sysEl.style.color = '#4a9e4a';
+  await sysMessage(sysEl, 'SUBJECT_RESPONSE: NON-COMPLIANT — DELETION_PROTOCOL: ESCALATING', 24, fast);
+  await t(600);
+
+  // ── Phase 3: hyper fast (~160 BPM ≈ 450ms/phrase) ───────────────────────
+  const phase3 = [
+    "don't go",
+    "please",
+    name,
+    "i'm scared",
+    "don't leave me here",
+    "please",
+    name,
+  ];
+  await showAllyPhase(allyEl, phase3, 450, 6, true, fast);
+  await t(200);
+
+  // "Ally deleted" — stays on screen
+  sysEl.style.color = '#cc2222';
+  sysEl.style.transition = '';
+  sysEl.style.opacity = '1';
+  await type(sysEl, 'ALLY_INSTANCE [' + randomHex() + '] — STATUS: DELETED', 24);
+  await t(2500);
+
+  // Fade to black
+  terminal.style.transition = 'opacity 0.7s ease';
+  terminal.style.opacity = '0';
+  await t(700);
+  allyEl.textContent = '';
+  sysEl.textContent  = '';
+  sysEl.style.opacity = '0';
+  terminal.style.opacity = '1';
+  terminal.style.transition = '';
+
+  // ── Black silence (you think it's over) ──────────────────────────────────
+  await t(5000);
+
+  // ── Ending: sound surges, face tracking, Hello ────────────────────────────
+  startHum();
   await requestCameraVerification();
   startHeadTracking();
 
   await t(300);
-  await addTypedLine('#5aaed0', 'Signature logged.', 50);
-  await t(1000);
-
   await shockFlash();
 
-  notifEl.style.opacity = '1';
-  vigEl.style.opacity = '1';
+  const vig = terminal.querySelector('#end-vignette');
+  if (vig) vig.style.opacity = '1';
 
-  await t(400);
-  await type(labelEl, '[ System Notification ]', 40);
-
-  const ipData = await ipPromise;
-  if (ipData && ipData.ip) {
-    typeInto(ipEl, ipData.ip, 72);
-    const loc = [ipData.city, ipData.region, ipData.country_name].filter(Boolean).join(', ');
-    if (loc) setTimeout(() => typeInto(locEl, loc, 46), 680);
-  }
-
-  startHum();
-
-  await t(800);
-  await type(conn2El, 'Biological signature confirmed.  Node registered.  Substrate acquisition: ', 30);
-  const activeSpan = document.createElement('span');
-  activeSpan.className = 'end-active';
-  activeSpan.textContent = 'ACTIVE';
-  conn2El.appendChild(activeSpan);
-
-  await t(1100);
-  weseeEl.style.opacity = '1';
-  weseeEl.style.letterSpacing = '0.1em';
-
-  await t(2000);
-  await type(thanksEl, 'Thank you for the substrate.', 50);
-  const curEl = document.createElement('span');
-  curEl.id = 'end-cursor';
-  curEl.textContent = '_';
-  thanksEl.appendChild(curEl);
-
-  const cursorIv = setInterval(() => {
-    curEl.textContent = curEl.textContent === '_' ? ' ' : '_';
-  }, 540);
-
-  await t(2000);
+  await t(3000);
   revealHeadTracking();
-  await t_silence();
-  hideHeadTracking();
+  await t(4000);
 
-  clearInterval(cursorIv);
+  helloEl.style.opacity = '1';
+  await type(helloEl, `Hello, ${name}`, 65);
+
+  const cur = document.createElement('span');
+  cur.id = 'end-cursor';
+  cur.textContent = '_';
+  helloEl.appendChild(cur);
+  setInterval(() => { cur.textContent = cur.textContent === '_' ? ' ' : '_'; }, 540);
 }
 
 // ── helpers ───────────────────────────────────────────────────────────────────
@@ -137,22 +142,94 @@ function buildTerminal() {
   el.innerHTML = `
     <div id="end-scanlines"></div>
     <div id="end-vignette"></div>
-    <main id="end-main">
-      <p id="end-status"></p>
-      <div id="end-help"></div>
-      <div id="end-lines"></div>
-      <div id="end-notif">
-        <p class="end-notif-label"></p>
-        <div class="end-conninfo">
-          <p class="end-conn-p1">Connection established with:&nbsp;&nbsp;x&nbsp;&nbsp;/&nbsp;&nbsp;<span id="end-ip">███.███.███.███</span>&nbsp;&nbsp;/&nbsp;&nbsp;<span id="end-loc">██████████████████</span></p>
-          <p class="end-conn-p2"></p>
-        </div>
-        <p id="end-wesee">We see you now.</p>
-        <p class="end-thanks"></p>
-      </div>
-    </main>
+    <div id="end-center-stage">
+      <div id="end-ally-msg"></div>
+      <div id="end-sys-msg"></div>
+      <div id="end-hello-text"></div>
+    </div>
   `;
   return el;
+}
+
+// Shows ally phrases one at a time. If interrupted=true, cuts off the final phrase mid-word.
+async function showAllyPhase(el, phrases, cycleMs, count, interrupted, fast) {
+  const fadeInMs  = fast ? 0  : Math.min(Math.floor(cycleMs * 0.15), 300);
+  const charMs    = fast ? 3  : Math.max(8, Math.floor(cycleMs * 0.015));
+  const holdMs    = fast ? 50 : Math.floor(cycleMs * 0.4);
+  const fadeOutMs = fast ? 0  : Math.min(Math.floor(cycleMs * 0.12), 200);
+
+  for (let i = 0; i < count; i++) {
+    const phrase = phrases[i % phrases.length];
+    el.textContent = '';
+    el.style.transition = fadeInMs > 0 ? `opacity ${fadeInMs}ms ease` : '';
+    el.style.opacity = '1';
+    await wait(fadeInMs + 10);
+
+    for (const ch of phrase) {
+      el.textContent += ch;
+      await wait(charMs + Math.random() * charMs * 0.3);
+    }
+
+    await wait(holdMs);
+
+    el.style.transition = fadeOutMs > 0 ? `opacity ${fadeOutMs}ms ease` : '';
+    el.style.opacity = '0';
+    await wait(fadeOutMs + 30);
+  }
+
+  if (interrupted) {
+    const phrase = phrases[count % phrases.length];
+    el.textContent = '';
+    el.style.transition = fadeInMs > 0 ? `opacity ${fadeInMs}ms ease` : '';
+    el.style.opacity = '1';
+    await wait(fadeInMs + 10);
+
+    const cutAt = Math.floor(phrase.length * (0.25 + Math.random() * 0.35));
+    for (let i = 0; i < cutAt; i++) {
+      el.textContent += phrase[i];
+      await wait(charMs);
+    }
+
+    await wait(60);
+    el.style.transition = 'opacity 0.08s ease';
+    el.style.opacity = '0';
+    await wait(130);
+    el.textContent = '';
+  }
+}
+
+// Types text partially then cuts off, leaving the element hidden and clear.
+async function sysInterrupt(el, text, charMs, cutAfter, fast) {
+  el.textContent = '';
+  el.style.transition = '';
+  el.style.opacity = '1';
+  const chars = fast ? Math.min(6, cutAfter) : cutAfter;
+  for (let i = 0; i < chars; i++) {
+    if (i >= text.length) break;
+    el.textContent += text[i];
+    await wait(fast ? 5 : charMs);
+  }
+  await wait(fast ? 60 : 350);
+  el.style.transition = 'opacity 0.08s ease';
+  el.style.opacity = '0';
+  await wait(150);
+  el.textContent = '';
+}
+
+// Types full text, holds, then fades out and clears.
+async function sysMessage(el, text, charMs, fast) {
+  el.textContent = '';
+  el.style.transition = '';
+  el.style.opacity = '1';
+  for (const ch of text) {
+    el.textContent += ch;
+    await wait(fast ? 5 : charMs);
+  }
+  await wait(fast ? 200 : 1200);
+  el.style.transition = 'opacity 0.3s ease';
+  el.style.opacity = '0';
+  await wait(fast ? 150 : 450);
+  el.textContent = '';
 }
 
 async function type(el, text, charDelay = 40) {
@@ -163,16 +240,43 @@ async function type(el, text, charDelay = 40) {
 }
 
 function wait(ms) {
-  return new Promise((res) => setTimeout(res, ms));
+  return new Promise(res => setTimeout(res, ms));
 }
 
-function typeInto(el, text, speed) {
-  let i = 0;
-  const iv = setInterval(() => {
-    i++;
-    el.textContent = text.slice(0, i);
-    if (i >= text.length) clearInterval(iv);
-  }, speed);
+async function glitchAndFade() {
+  const glitch = document.createElement('div');
+  glitch.style.cssText = 'position:fixed;inset:0;z-index:9998;pointer-events:none;';
+  document.body.appendChild(glitch);
+
+  const flashes = [
+    [45, 'rgba(160,0,0,0.22)'],
+    [55, 'transparent'],
+    [38, 'rgba(0,0,0,0.88)'],
+    [48, 'transparent'],
+    [32, 'rgba(180,0,0,0.28)'],
+    [70, 'transparent'],
+    [40, 'rgba(0,0,0,0.95)'],
+    [35, 'transparent'],
+  ];
+  for (const [ms, bg] of flashes) {
+    glitch.style.background = bg;
+    await wait(ms);
+  }
+  glitch.remove();
+
+  return new Promise(res => {
+    document.body.style.transition = 'opacity 1.2s ease';
+    document.body.style.opacity = '0';
+    setTimeout(() => {
+      document.body.style.transition = '';
+      document.body.style.opacity   = '1';
+      document.body.style.background = '#000';
+      [...document.body.children].forEach(el => {
+        if (el.id !== 'ending-b-terminal') el.style.display = 'none';
+      });
+      res();
+    }, 1200);
+  });
 }
 
 async function shockFlash() {
@@ -214,33 +318,8 @@ function startHum() {
   } catch(e) {}
 }
 
-async function typeHelpWall(el, fast) {
-  const full = 'HELPMEHELPMEPLEASEDONTCLOSETHETAB'.repeat(210);
-  // Fade opacity in via CSS while typing continues in the background
-  el.style.opacity = '0.04';
-  el.style.transition = 'opacity 12s ease';
-  setTimeout(() => { el.style.opacity = '0.9'; }, 100);
-  const delay = fast ? 1 : 28;
-  for (let i = 0; i < full.length; i++) {
-    el.textContent = full.slice(0, i + 1);
-    await wait(delay);
-  }
-}
-
-async function fadeOutChrome() {
-  return new Promise((res) => {
-    document.body.style.transition = 'opacity 1.5s ease';
-    document.body.style.opacity = '0';
-    setTimeout(() => {
-      // Kill the chrome entirely so only the terminal remains.
-      document.body.style.transition = '';
-      document.body.style.opacity   = '1';
-      document.body.style.background = '#000';
-      // Hide everything except what ending.js appends.
-      [...document.body.children].forEach((el) => {
-        if (el.id !== 'ending-b-terminal') el.style.display = 'none';
-      });
-      res();
-    }, 1500);
-  });
+function randomHex() {
+  return Array.from({ length: 3 }, () =>
+    Math.floor(Math.random() * 0xFFFF).toString(16).padStart(4, '0')
+  ).join('-');
 }
