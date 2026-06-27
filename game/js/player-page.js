@@ -256,19 +256,9 @@ function glitchTabs() {
   const talkTab    = document.querySelector('#tab-talk a');
   const editTab    = document.querySelector('#tab-edit a');
 
-  const origArticle = articleTab?.textContent;
-  const origTalk    = talkTab?.textContent;
-  const origEdit    = editTab?.textContent;
-
   if (articleTab) articleTab.textContent = 'CAPTURED';
   if (talkTab)    { talkTab.parentElement.style.display = ''; talkTab.textContent = 'FLAGGED'; }
   if (editTab)    { editTab.parentElement.style.display = ''; editTab.textContent = 'LOCKED'; }
-
-  setTimeout(() => {
-    if (articleTab) articleTab.textContent = origArticle;
-    if (talkTab)    { talkTab.textContent = origTalk; talkTab.parentElement.style.display = 'none'; }
-    if (editTab)    { editTab.textContent = origEdit; editTab.parentElement.style.display = 'none'; }
-  }, 2800);
 }
 
 function showArchivalModal(username, riskScore) {
