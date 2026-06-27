@@ -1,6 +1,8 @@
 # wiki-wiki
 
-A browser-based hypertext horror game styled as a Wikipedia clone.
+In progress: summer project 
+
+A browser-based hypertext horror puzzle game styled as a Wikipedia clone.
 
 ---
 
