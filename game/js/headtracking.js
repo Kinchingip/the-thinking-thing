@@ -22,6 +22,14 @@ export async function startHeadTracking() {
   if (_started) return;
   _started = true;
 
+  // MediaPipe's WASM runtime calls window.alert() for certain WebGL errors.
+  // Intercept and suppress only that specific message before loading any MediaPipe code.
+  const _nativeAlert = window.alert.bind(window);
+  window.alert = (msg) => {
+    if (typeof msg === 'string' && msg.includes('WebGL')) return;
+    _nativeAlert(msg);
+  };
+
   // Sketch must load first — it defines window.setup / window.draw for p5 global mode.
   try {
     await loadScript('./js/headtracking-sketch.js');
