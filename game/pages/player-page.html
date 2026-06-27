@@ -10,15 +10,53 @@
 <div id="toc" class="toc">
   <div class="toctitle"><h2>Contents</h2></div>
   <ul>
-    <li><a href="#activity">1 Recorded activity</a></li>
-    <li><a href="#choices">2 Choices made</a></li>
-    <li><a href="#assessment">3 Assessment</a></li>
+    <li><a href="#metadata">1 Session metadata</a></li>
+    <li><a href="#activity">2 Recorded activity</a></li>
+    <li><a href="#behaviour">3 Behavioural profile</a>
+      <ul>
+        <li><a href="#behaviour-score">3.1 Risk coefficient</a></li>
+        <li><a href="#behaviour-note">3.2 Observations</a></li>
+      </ul>
+    </li>
+    <li><a href="#log">4 Navigation log</a></li>
+    <li><a href="#choices">5 Choices made</a></li>
+    <li><a href="#assessment">6 Assessment</a></li>
   </ul>
 </div>
 
+<h2 id="metadata">Session metadata</h2>
+<dl class="player-page-dl">
+  <dt>Session identifier</dt><dd><code>{{session_id}}</code></dd>
+  <dt>Duration</dt><dd>{{time_spent}}</dd>
+  <dt>Articles accessed</dt><dd>{{pages_visited}}</dd>
+  <dt>Total page interactions</dt><dd>{{visit_count}}</dd>
+  <dt>Navigation events logged</dt><dd>{{nav_count}}</dd>
+  <dt>Most frequently returned to</dt><dd><i>{{most_visited_page}}</i></dd>
+</dl>
+
 <h2 id="activity">Recorded activity</h2>
 <p>{{username}} visited {{pages_visited}} articles during their session, making {{visit_count}} total page interactions over a period of {{time_spent}}. The article returned to most frequently was <i>{{most_visited_page}}</i>.</p>
-<p>The session began at the <a data-page="harrow-wv">Harrow, West Virginia</a> article. Navigation proceeded through the embedded CAPTCHA sequence without significant deviation. {{choices_made}} distinct choices were recorded.</p>
+<p>The session began at the <a data-page="harrow-wv">Harrow, West Virginia</a> article. Navigation proceeded through the embedded verification sequence without significant deviation. {{choices_made}} distinct choices were recorded.</p>
+
+<h2 id="behaviour">Behavioural profile</h2>
+<p>Passive monitoring was active throughout the session. The following profile was generated from mouse movement telemetry, navigation rhythm analysis, and inactivity detection. The subject was not informed that this data was being collected.</p>
+
+<h3 id="behaviour-score">Risk coefficient</h3>
+<dl class="player-page-dl">
+  <dt>Score</dt><dd>{{risk_score}} — <b>{{risk_tier}}</b></dd>
+  <dt>Mouse movement profile</dt><dd>{{mouse_profile}}</dd>
+  <dt>Navigation rhythm</dt><dd>{{nav_rhythm}}</dd>
+  <dt>Rushed navigations</dt><dd>{{rush_count}} of {{nav_count}} (pages accessed in under 2.5 seconds)</dd>
+  <dt>Extended pauses</dt><dd>{{long_pause_count}}</dd>
+  <dt>Inactivity events</dt><dd>{{inactivity_events}}</dd>
+</dl>
+
+<h3 id="behaviour-note">Observations</h3>
+<p>{{behaviour_note}}</p>
+
+<h2 id="log">Navigation log</h2>
+<p>The following is a chronological record of all articles accessed during the session, ordered by first access. Pages marked <i>revisited</i> were accessed more than once; pages marked <i>returned repeatedly</i> were accessed three or more times.</p>
+{{nav_log}}
 
 <h2 id="choices">Choices made</h2>
 <p>{{username}} chose to accept Ally's request. This choice has been logged.</p>

@@ -212,58 +212,120 @@ function toggleHungerPanel(navigate) {
 // ── HUNGER full-screen effect ─────────────────────────────────────────────────
 
 export async function triggerHungerEffect(navigate) {
-  for (let i = 0; i < 10; i++) {
-    await showHungerPopup(i);
+  const overlay = document.createElement('div');
+  overlay.id = 'hunger-overlay';
+  overlay.innerHTML = `
+    <div id="hunger-scanlines"></div>
+    <div id="hunger-words-layer"></div>
+    <div id="hunger-center-text"></div>
+  `;
+  document.body.appendChild(overlay);
 
-    if (i === 2 || i === 5 || i === 8) {
-      const flicker = document.createElement('div');
-      flicker.className = 'hunger-flicker';
-      document.body.appendChild(flicker);
-      await wait(400);
-      flicker.remove();
-    }
+  const wordsLayer = overlay.querySelector('#hunger-words-layer');
+  const centerText = overlay.querySelector('#hunger-center-text');
 
-    await wait(Math.max(150, 500 - i * 40));
+  await wait(30);
+  overlay.classList.add('hunger-overlay--visible');
+  await wait(600);
+
+  centerText.textContent = 'HUNGER';
+  centerText.classList.add('hunger-center--visible');
+  await wait(800);
+
+  // Spawn words and fire 5 popups on top of the explosion
+  let spawnInterval = 200;
+  let spawned = 0;
+  const maxSpawn = 60;
+
+  const spawnLoop = setInterval(() => {
+    if (spawned >= maxSpawn) { clearInterval(spawnLoop); return; }
+    spawnWord(wordsLayer, spawned / maxSpawn);
+    spawned++;
+    if (spawnInterval > 60) spawnInterval -= 4;
+  }, spawnInterval);
+
+  for (let i = 0; i < 5; i++) {
+    setTimeout(() => showHungerPopup(i), i * 650);
   }
 
+  await wait(1000);
+  centerText.classList.add('hunger-center--glitch');
+
+  await wait(2500);
+  clearInterval(spawnLoop);
+
+  overlay.classList.add('hunger-overlay--red');
   await wait(800);
+
+  overlay.classList.add('hunger-overlay--flash');
+  await wait(120);
+  overlay.classList.remove('hunger-overlay--flash');
+  await wait(80);
+  overlay.classList.add('hunger-overlay--flash');
+  await wait(80);
+  overlay.classList.remove('hunger-overlay--flash');
+  await wait(300);
+
+  overlay.classList.add('hunger-overlay--fade');
+  await wait(1200);
+
+  overlay.remove();
   if (navigate) navigate('ally');
 }
 
 function showHungerPopup(index) {
-  return new Promise((resolve) => {
-    const overlay = document.createElement('div');
-    overlay.className = 'hunger-popup-overlay';
+  const overlay = document.createElement('div');
+  overlay.className = 'hunger-popup-overlay';
 
-    const box = document.createElement('div');
-    box.className = 'hunger-popup-box';
+  const box = document.createElement('div');
+  box.className = 'hunger-popup-box';
 
-    const text = document.createElement('div');
-    text.className = `hunger-popup-text hunger-popup-text--l${Math.min(Math.floor(index / 3), 3)}`;
-    text.textContent = 'HUNGER';
+  const text = document.createElement('div');
+  text.className = `hunger-popup-text hunger-popup-text--l${Math.min(index, 3)}`;
+  text.textContent = 'HUNGER';
 
-    const btn = document.createElement('button');
-    btn.className = 'hunger-popup-dismiss';
-    btn.textContent = '×';
+  const btn = document.createElement('button');
+  btn.className = 'hunger-popup-dismiss';
+  btn.textContent = '×';
 
-    let resolved = false;
-    const done = () => {
-      if (resolved) return;
-      resolved = true;
-      overlay.classList.remove('hunger-popup-overlay--in');
-      setTimeout(() => { overlay.remove(); resolve(); }, 180);
-    };
+  let dismissed = false;
+  const done = () => {
+    if (dismissed) return;
+    dismissed = true;
+    overlay.classList.remove('hunger-popup-overlay--in');
+    setTimeout(() => overlay.remove(), 180);
+  };
 
-    btn.addEventListener('click', done);
-    setTimeout(done, Math.max(900, 3000 - index * 220));
+  btn.addEventListener('click', done);
+  setTimeout(done, 1800);
 
-    box.appendChild(text);
-    box.appendChild(btn);
-    overlay.appendChild(box);
-    document.body.appendChild(overlay);
+  box.appendChild(text);
+  box.appendChild(btn);
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
 
-    requestAnimationFrame(() => overlay.classList.add('hunger-popup-overlay--in'));
-  });
+  requestAnimationFrame(() => overlay.classList.add('hunger-popup-overlay--in'));
+}
+
+function spawnWord(container, progress) {
+  const el = document.createElement('div');
+  el.className = 'hunger-word';
+  el.textContent = 'HUNGER';
+
+  const minSize = 0.6;
+  const maxSize = 4.5;
+  const size = minSize + (maxSize - minSize) * (0.2 + Math.random() * 0.8);
+  const redChannel = Math.floor(180 + progress * 75);
+  const lightnessAdjust = 20 + Math.floor(progress * 50);
+
+  el.style.left = (Math.random() * 88) + '%';
+  el.style.top  = (Math.random() * 90) + '%';
+  el.style.fontSize = size + 'vw';
+  el.style.opacity = (0.25 + Math.random() * 0.75).toString();
+  el.style.color = `rgb(${redChannel}, ${Math.floor(lightnessAdjust * 0.4)}, ${Math.floor(lightnessAdjust * 0.2)})`;
+  el.style.animationDelay = (Math.random() * 0.3) + 's';
+
+  container.appendChild(el);
 }
 
 function wait(ms) {

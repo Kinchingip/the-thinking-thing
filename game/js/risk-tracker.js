@@ -6,12 +6,20 @@ const vels   = [];        // rolling mouse velocity samples
 let lastMove = Date.now();
 let lastNav  = Date.now();
 
+let navCount         = 0;
+let rushCount        = 0;
+let longPauseCount   = 0;
+let inactivityEvents = 0;
+
 export function initRiskTracker() {
   document.addEventListener('mousemove', onMove);
 
   // Inactivity: no mouse movement for 25s nudges score up
   setInterval(() => {
-    if (Date.now() - lastMove > 25_000) nudge(0.008);
+    if (Date.now() - lastMove > 25_000) {
+      nudge(0.008);
+      inactivityEvents++;
+    }
   }, 8000);
 }
 
@@ -19,14 +27,46 @@ export function initRiskTracker() {
 export function recordNavigation() {
   const dwell = Date.now() - lastNav;
   lastNav = Date.now();
+  navCount++;
 
-  if (dwell < 2500)       nudge(0.04);   // rushed — barely read it
-  else if (dwell > 90000) nudge(0.025);  // very long pause — frozen?
-  else                    nudge(-0.008); // normal reading rhythm
+  if (dwell < 2500) {
+    nudge(0.04);
+    rushCount++;
+  } else if (dwell > 90000) {
+    nudge(0.025);
+    longPauseCount++;
+  } else {
+    nudge(-0.008);
+  }
 }
 
 export function getRiskScore() {
   return Math.round(score * 1000) / 1000;
+}
+
+export function getBehaviorReport() {
+  const s = getRiskScore();
+  const tier = s < 0.35 ? 'LOW' : s < 0.55 ? 'MODERATE' : s < 0.72 ? 'ELEVATED' : 'HIGH';
+
+  const mouseProfile = s < 0.35 ? 'deliberate and consistent'
+    : s < 0.55 ? 'variable'
+    : s < 0.72 ? 'erratic'
+    : 'highly erratic';
+
+  const rushRatio = navCount > 0 ? rushCount / navCount : 0;
+  const rhythm = rushRatio > 0.5 ? 'rushed'
+    : longPauseCount > 2 ? 'hesitant'
+    : 'irregular';
+
+  const note = tier === 'LOW'
+    ? 'The subject navigated methodically. Movement patterns suggest focused reading. No anomalies were flagged.'
+    : tier === 'MODERATE'
+    ? "The subject's navigation patterns were within expected parameters. Minor deviations in rhythm were recorded but not flagged."
+    : tier === 'ELEVATED'
+    ? 'Several anomalous navigation events were detected. Movement patterns suggest heightened awareness consistent with subjects who become conscious of monitoring during the session.'
+    : "The subject's behaviour was significantly anomalous. Erratic movement and rushed navigation suggest acute stress or awareness of the monitoring system. This signature has been flagged for secondary review.";
+
+  return { score: s, tier, mouseProfile, rhythm, navCount, rushCount, longPauseCount, inactivityEvents, note };
 }
 
 function onMove(e) {
