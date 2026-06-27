@@ -152,35 +152,28 @@ function gotFaces(results) {
 // Sends the current camera frame to MediaPipe. Called each draw() tick;
 // the _sending flag prevents overlapping async calls.
 let _sending = false;
-let _sendFailures = 0;
-let _offscreenCanvas = null;
-let _offscreenCtx = null;
 
-// Draws each frame to a 2D canvas before passing to MediaPipe.
-// Sending a hidden video element directly causes "Failed to create WebGL canvas context"
-// in some browsers; a plain canvas avoids the issue.
+// Uses createImageBitmap to snapshot the frame before handing it to MediaPipe.
+// Passing a video element directly triggers "Failed to create WebGL canvas context"
+// in browsers where MediaPipe can't create an internal WebGL texture from a live
+// video element. An ImageBitmap is a decoded, GPU-ready bitmap that avoids this path.
+// No failure cutoff — if a frame errors we silently skip it and try again next draw().
 function sendFrame() {
-  if (!faceDetector || _sending || _sendFailures > 5) return;
+  if (!faceDetector || _sending) return;
   if (!cam.elt || cam.elt.readyState < 2) return;
-  const vw = cam.elt.videoWidth;
-  const vh = cam.elt.videoHeight;
-  if (!vw || !vh) return;
-
-  if (!_offscreenCanvas || _offscreenCanvas.width !== vw || _offscreenCanvas.height !== vh) {
-    _offscreenCanvas = document.createElement('canvas');
-    _offscreenCanvas.width = vw;
-    _offscreenCanvas.height = vh;
-    _offscreenCtx = _offscreenCanvas.getContext('2d');
-  }
-  _offscreenCtx.drawImage(cam.elt, 0, 0, vw, vh);
-
+  if (!cam.elt.videoWidth || !cam.elt.videoHeight) return;
   _sending = true;
+  _sendBitmap();
+}
+
+async function _sendBitmap() {
   try {
-    faceDetector.send({ image: _offscreenCanvas })
-      .catch(() => { _sendFailures++; })
-      .finally(() => { _sending = false; });
-  } catch (e) {
-    _sendFailures++;
+    const bmp = await createImageBitmap(cam.elt);
+    await faceDetector.send({ image: bmp });
+    bmp.close();
+  } catch (_) {
+    // face detection unavailable this frame — sketch continues without it
+  } finally {
     _sending = false;
   }
 }
