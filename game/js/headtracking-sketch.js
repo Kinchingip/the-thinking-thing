@@ -153,29 +153,17 @@ function gotFaces(results) {
 // the _sending flag prevents overlapping async calls.
 let _sending = false;
 
-// Uses createImageBitmap to snapshot the frame before handing it to MediaPipe.
-// Passing a video element directly triggers "Failed to create WebGL canvas context"
-// in browsers where MediaPipe can't create an internal WebGL texture from a live
-// video element. An ImageBitmap is a decoded, GPU-ready bitmap that avoids this path.
-// No failure cutoff — if a frame errors we silently skip it and try again next draw().
+// Sends the current camera frame to MediaPipe. Called each draw() tick;
+// the _sending flag prevents overlapping async calls. Errors are swallowed
+// silently — the window.alert suppression in headtracking.js handles the
+// WebGL dialog that MediaPipe's WASM runtime would otherwise show.
 function sendFrame() {
   if (!faceDetector || _sending) return;
   if (!cam.elt || cam.elt.readyState < 2) return;
-  if (!cam.elt.videoWidth || !cam.elt.videoHeight) return;
   _sending = true;
-  _sendBitmap();
-}
-
-async function _sendBitmap() {
-  try {
-    const bmp = await createImageBitmap(cam.elt);
-    await faceDetector.send({ image: bmp });
-    bmp.close();
-  } catch (_) {
-    // face detection unavailable this frame — sketch continues without it
-  } finally {
-    _sending = false;
-  }
+  faceDetector.send({ image: cam.elt })
+    .catch(() => {})
+    .finally(() => { _sending = false; });
 }
 
 function initDust() {
