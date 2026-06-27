@@ -1300,6 +1300,106 @@
   font-style: italic;
 }
 
+/* username flagging */
+.player-uname-flagged {
+  color: #b32424;
+  transition: color 1.4s ease;
+}
+
+/* substrate extraction process log */
+.player-transfer-panel {
+  margin: 28px 0 10px;
+  border: 1px solid #b32424;
+  background: #0d0d0d;
+  color: #cc4444;
+  font-family: 'Share Tech Mono', 'Courier New', monospace;
+  font-size: 0.82em;
+  padding: 0;
+  overflow: hidden;
+}
+.player-transfer-header {
+  background: #b32424;
+  color: #fff;
+  padding: 5px 12px;
+  font-size: 0.85em;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.player-transfer-rows {
+  padding: 10px 14px 8px;
+}
+.player-transfer-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 2px 0;
+  border-bottom: 1px solid #1a1a1a;
+  color: #555;
+}
+.player-transfer-row span { text-align: right; }
+.player-tr-done   { color: #3a6b3a; }
+.player-tr-active { color: #cc4444; }
+.player-tr-queue  { color: #444; }
+.player-transfer-bar-wrap {
+  background: #1a1a1a;
+  height: 6px;
+}
+.player-transfer-bar {
+  height: 100%;
+  background: #b32424;
+  transition: width 0.5s linear;
+}
+
+/* archival modal */
+.player-archival-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.player-archival-overlay--in { opacity: 1; }
+.player-archival-modal {
+  background: #fff;
+  border: 1px solid #c0c0c0;
+  box-shadow: 4px 4px 16px rgba(0,0,0,0.4);
+  width: 440px;
+  max-width: 94vw;
+  font-size: 0.9em;
+}
+.player-archival-header {
+  background: #8a0000;
+  color: #fff;
+  padding: 8px 14px;
+  font-weight: bold;
+  font-size: 0.92em;
+  letter-spacing: 0.03em;
+}
+.player-archival-body {
+  padding: 18px 20px 10px;
+  line-height: 1.65;
+  color: #202122;
+}
+.player-archival-body p { margin: 0 0 10px; }
+.player-archival-body p:last-child { margin-bottom: 0; }
+.player-archival-footer {
+  padding: 10px 16px 14px;
+  text-align: right;
+}
+.player-archival-ok {
+  background: #8a0000;
+  color: #fff;
+  border: none;
+  padding: 6px 20px;
+  font-size: 0.88em;
+  cursor: pointer;
+  font-family: inherit;
+}
+.player-archival-ok:hover { background: #6a0000; }
+
 /* ═══════════════════════════════════════════════════════════════════════════
    CONTENTS PAGE
    ══════════════════════════════════════════════════════════════════════════ */
