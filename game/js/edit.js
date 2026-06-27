@@ -273,35 +273,49 @@ export async function triggerHungerEffect(navigate) {
   if (navigate) navigate('ally');
 }
 
+const POPUP_SUBS = [
+  '',
+  'This process cannot be stopped.',
+  'Your session data has been recorded.',
+  'Substrate acquisition is in progress.',
+  'Integration protocol is now active.',
+];
+
 function showHungerPopup(index) {
+  const origin = window.location.hostname || 'wikiwiki.com';
+
   const overlay = document.createElement('div');
   overlay.className = 'hunger-popup-overlay';
 
-  const box = document.createElement('div');
-  box.className = 'hunger-popup-box';
+  const dialog = document.createElement('div');
+  dialog.className = 'hunger-browser-dialog';
 
-  const text = document.createElement('div');
-  text.className = `hunger-popup-text hunger-popup-text--l${Math.min(index, 3)}`;
-  text.textContent = 'HUNGER';
-
-  const btn = document.createElement('button');
-  btn.className = 'hunger-popup-dismiss';
-  btn.textContent = '×';
+  dialog.innerHTML = `
+    <div class="hunger-dialog-header">${origin} says</div>
+    <div class="hunger-dialog-body">
+      <p class="hunger-dialog-message">HUNGER</p>
+      <p class="hunger-dialog-sub">${POPUP_SUBS[index] ?? ''}</p>
+    </div>
+    <div class="hunger-dialog-footer">
+      <label class="hunger-dialog-suppress">
+        <input type="checkbox"> Don't allow this page to create additional dialogs
+      </label>
+      <button class="hunger-dialog-ok">OK</button>
+    </div>
+  `;
 
   let dismissed = false;
   const done = () => {
     if (dismissed) return;
     dismissed = true;
     overlay.classList.remove('hunger-popup-overlay--in');
-    setTimeout(() => overlay.remove(), 180);
+    setTimeout(() => overlay.remove(), 150);
   };
 
-  btn.addEventListener('click', done);
+  dialog.querySelector('.hunger-dialog-ok').addEventListener('click', done);
   setTimeout(done, 1800);
 
-  box.appendChild(text);
-  box.appendChild(btn);
-  overlay.appendChild(box);
+  overlay.appendChild(dialog);
   document.body.appendChild(overlay);
 
   requestAnimationFrame(() => overlay.classList.add('hunger-popup-overlay--in'));

@@ -1231,6 +1231,43 @@
 
 .player-page-ally-message p { margin-bottom: 6px; }
 
+.player-connection-box {
+  border: 1px solid #b32424;
+  background: #fff8f8;
+  padding: 10px 14px;
+  margin: 14px 0 18px;
+  font-size: 0.88em;
+  font-family: 'Share Tech Mono', 'Courier New', monospace;
+}
+.player-connection-label {
+  font-weight: bold;
+  color: #b32424;
+  margin: 0 0 4px 0;
+  font-size: 0.82em;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.player-connection-detail {
+  margin: 0;
+  color: #202122;
+  letter-spacing: 0.04em;
+}
+
+.player-horror-note {
+  border-left: 3px solid #b32424;
+  padding: 8px 12px;
+  margin: 14px 0;
+  background: #fff8f8;
+  font-size: 0.9em;
+  color: #4a0000;
+}
+.player-horror-note p { margin: 0; }
+
+#player-countdown {
+  font-family: 'Share Tech Mono', 'Courier New', monospace;
+  letter-spacing: 0.04em;
+}
+
 .player-page-dl {
   margin: 0.8em 0 1.2em 0;
   display: grid;
@@ -1434,7 +1471,7 @@
   100% { background: rgba(255,255,255,0); }
 }
 
-/* ── hunger riddle: 10-popup ending ── */
+/* ── hunger riddle: browser alert-style popups ── */
 .hunger-popup-overlay {
   position: fixed;
   inset: 0;
@@ -1443,45 +1480,79 @@
   align-items: center;
   justify-content: center;
   z-index: 9999;
-  transition: background 0.15s;
+  transition: background 0.1s;
   pointer-events: none;
 }
 .hunger-popup-overlay--in {
-  background: rgba(0,0,0,0.82);
+  background: rgba(0,0,0,0.08);
   pointer-events: all;
 }
-.hunger-popup-box {
-  background: #080808;
-  border: 1px solid #2a0000;
-  padding: 52px 80px;
-  text-align: center;
-  min-width: 300px;
-  box-shadow: 0 0 60px rgba(140,0,0,0.2);
+.hunger-browser-dialog {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.35), 0 1px 4px rgba(0,0,0,0.2);
+  width: 420px;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 13px;
 }
-.hunger-popup-text {
-  font-size: 2.6rem;
-  font-weight: 900;
-  letter-spacing: 0.6em;
-  text-transform: uppercase;
-  font-family: 'Share Tech Mono', 'Courier New', monospace;
+.hunger-dialog-header {
+  background: #f1f3f4;
+  padding: 10px 16px 9px;
+  border-bottom: 1px solid #dadce0;
+  font-size: 12px;
+  color: #5f6368;
+  font-weight: 500;
+  user-select: none;
 }
-.hunger-popup-text--l0 { color: #880000; animation: hungerPopupGlitch 2.4s step-end infinite; }
-.hunger-popup-text--l1 { color: #aa0000; animation: hungerPopupGlitch 1.4s step-end infinite; }
-.hunger-popup-text--l2 { color: #cc1111; animation: hungerPopupGlitch 0.8s step-end infinite; }
-.hunger-popup-text--l3 { color: #ee2222; font-size: 3.4rem; animation: hungerPopupGlitch 0.35s step-end infinite; }
-.hunger-popup-dismiss {
-  display: block;
-  margin: 32px auto 0;
-  background: none;
-  border: 1px solid #1c1c1c;
-  color: #2e2e2e;
-  padding: 6px 22px;
+.hunger-dialog-body {
+  padding: 16px 16px 12px;
+}
+.hunger-dialog-message {
+  font-size: 14px;
+  font-weight: 400;
+  color: #202124;
+  margin: 0 0 6px 0;
+  white-space: pre-wrap;
+}
+.hunger-dialog-sub {
+  font-size: 11.5px;
+  color: #80868b;
+  margin: 0;
+}
+.hunger-dialog-footer {
+  padding: 6px 16px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.hunger-dialog-suppress {
+  flex: 1;
+  font-size: 11px;
+  color: #5f6368;
+  display: flex;
+  align-items: center;
+  gap: 5px;
   cursor: pointer;
-  font-family: inherit;
-  font-size: 0.85rem;
-  transition: color 0.1s, border-color 0.1s;
+  user-select: none;
 }
-.hunger-popup-dismiss:hover { color: #666; border-color: #444; }
+.hunger-dialog-suppress input[type="checkbox"] {
+  accent-color: #1a73e8;
+  cursor: pointer;
+}
+.hunger-dialog-ok {
+  background: #1a73e8;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 22px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.hunger-dialog-ok:hover { background: #1558b0; }
 
 .hunger-flicker {
   position: fixed;
@@ -1499,14 +1570,4 @@
   70%  { background: rgba(0,0,0,0); }
   85%  { background: rgba(255,255,255,0.05); }
   100% { background: rgba(0,0,0,0); }
-}
-
-@keyframes hungerPopupGlitch {
-  0%   { text-shadow: none; transform: none; opacity: 1; }
-  4%   { text-shadow: -3px 0 rgba(255,0,0,0.8), 3px 0 rgba(0,0,0,0.6); transform: translateX(-2px); opacity: 0.9; }
-  5%   { text-shadow: 2px 0 rgba(255,0,0,0.5); transform: translateX(1px); }
-  6%   { text-shadow: none; transform: none; opacity: 1; }
-  50%  { text-shadow: 1px 0 rgba(200,0,0,0.6); transform: translateX(1px); opacity: 0.95; }
-  51%  { text-shadow: none; transform: none; opacity: 1; }
-  100% { text-shadow: none; transform: none; opacity: 1; }
 }
