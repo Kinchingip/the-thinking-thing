@@ -27,8 +27,6 @@ export async function triggerEndingB() {
   const fast = TEST_MODE;
   const t = (ms) => wait(fast ? Math.min(ms, 200) : ms);
 
-  const headTrackingReady = startHeadTracking();
-
   const { username } = getPlayerData();
   const name = username || 'user';
 
@@ -114,7 +112,7 @@ export async function triggerEndingB() {
   // ── Ending: sound surges, face tracking, Hello ────────────────────────────
   startHum();
   await requestCameraVerification();
-  await headTrackingReady;
+  await startHeadTracking();
 
   await t(300);
   await shockFlash();

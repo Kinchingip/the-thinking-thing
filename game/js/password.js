@@ -21,7 +21,7 @@ export function initPasswordGates() {
     if (!input || !btn) return;
 
     const attempt = () => {
-      if (input.value.trim() === correct) {
+      if (input.value.trim().toLowerCase() === correct.toLowerCase()) {
         if (flagName) setFlag(flagName);
         skipGate(gate);
       } else {
